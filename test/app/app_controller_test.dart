@@ -45,6 +45,43 @@ void main() {
     expect(controller.library.resume[trackOne.id], 42);
   });
 
+  test('progress persists resume after the desktop five-second threshold', () async {
+    final port = RecordingPlaybackPort();
+    final controller = AppController(
+      catalogue: RecordingCatalogue(),
+      playback: PlaybackController(port),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.initialize(persistedState: const PersistedState.defaults());
+    await controller.play(trackOne);
+    port.emit(const PlaybackPositionEvent(Duration(seconds: 3)));
+    await Future<void>.delayed(Duration.zero);
+    expect(controller.library.resume.containsKey(trackOne.id), isFalse);
+
+    port.emit(const PlaybackPositionEvent(Duration(seconds: 6)));
+    await Future<void>.delayed(Duration.zero);
+    expect(controller.library.resume[trackOne.id], 6);
+  });
+
+  test('pausing forces the current resume position to persist', () async {
+    final port = RecordingPlaybackPort();
+    final controller = AppController(
+      catalogue: RecordingCatalogue(),
+      playback: PlaybackController(port),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.initialize(persistedState: const PersistedState.defaults());
+    await controller.play(trackOne);
+    port.emit(const PlaybackPositionEvent(Duration(seconds: 2)));
+    await Future<void>.delayed(Duration.zero);
+    port.emit(const PlaybackStateEvent(playing: false, loading: false));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.library.resume[trackOne.id], 2);
+  });
+
   test('automatic queue advancement records the next talk in history', () async {
     final port = RecordingPlaybackPort();
     final controller = AppController(
@@ -92,7 +129,7 @@ void main() {
     expect(port.lastSeek, const Duration(seconds: 33));
   });
 
-  test('completed playback clears the stored resume position', () async {
+  test('completed playback resets the stored resume position to zero', () async {
     final port = RecordingPlaybackPort();
     final controller = AppController(
       catalogue: RecordingCatalogue(),
@@ -110,7 +147,7 @@ void main() {
     port.emit(const PlaybackEndedEvent());
     await Future<void>.delayed(Duration.zero);
 
-    expect(controller.library.resume.containsKey(trackOne.id), isFalse);
+    expect(controller.library.resume[trackOne.id], 0);
   });
 }
 

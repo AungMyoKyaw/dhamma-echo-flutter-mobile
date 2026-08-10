@@ -22,6 +22,7 @@ void main() {
     expect(result, isTrue);
     expect(port.urls, hasLength(2));
     expect(port.lastSeek, const Duration(seconds: 42));
+    expect(controller.position, const Duration(seconds: 42));
     expect(port.volume, 0.4);
     expect(port.speed, 1.5);
   });
