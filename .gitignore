@@ -13,3 +13,6 @@ ios/
 .vscode/
 .DS_Store
 assets/catalogue/dhamma.db.production
+
+__pycache__/
+*.pyc
