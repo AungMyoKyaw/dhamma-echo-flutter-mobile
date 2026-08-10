@@ -1,0 +1,29 @@
+name: dhamma_echo
+description: A quiet mobile library for discovering and listening to Dhamma talks.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  just_audio: ^0.10.6
+  path: ^1.9.1
+  sqflite: ^2.4.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  sqflite_common_ffi: ^2.4.2
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/catalogue/dhamma.db
+    - assets/images/app-icon.png
+    - assets/images/empty-library.svg

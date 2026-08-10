@@ -1,0 +1,15 @@
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+android/
+ios/
+*.iml
+.idea/
+.vscode/
+.DS_Store
+assets/catalogue/dhamma.db.production
