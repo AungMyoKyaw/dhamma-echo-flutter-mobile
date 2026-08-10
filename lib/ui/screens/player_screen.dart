@@ -54,9 +54,9 @@ class PlayerScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  IconButton(iconSize: 32, tooltip: 'Back 15 seconds', onPressed: () => player.jump(-15), icon: const Icon(Icons.replay_10)),
+                  _JumpButton(label: '-15s', tooltip: 'Back 15 seconds', onPressed: () => player.jump(-15)),
                   IconButton.filled(iconSize: 38, tooltip: player.playing ? 'Pause' : 'Play', onPressed: player.loading ? null : player.toggle, icon: Icon(player.playing ? Icons.pause_rounded : Icons.play_arrow_rounded)),
-                  IconButton(iconSize: 32, tooltip: 'Forward 15 seconds', onPressed: () => player.jump(15), icon: const Icon(Icons.forward_10)),
+                  _JumpButton(label: '+15s', tooltip: 'Forward 15 seconds', onPressed: () => player.jump(15)),
                 ],
               ),
               if (player.error.isNotEmpty) ...<Widget>[const SizedBox(height: 10), Text(player.error, style: TextStyle(color: Theme.of(context).colorScheme.error), textAlign: TextAlign.center)],
@@ -86,6 +86,31 @@ class PlayerScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+
+class _JumpButton extends StatelessWidget {
+  const _JumpButton({required this.label, required this.tooltip, required this.onPressed});
+
+  final String label;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(56, 48),
+          shape: const CircleBorder(),
+          padding: const EdgeInsets.all(8),
+        ),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+      ),
     );
   }
 }

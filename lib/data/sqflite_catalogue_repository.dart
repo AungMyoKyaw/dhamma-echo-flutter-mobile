@@ -118,7 +118,8 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
   Future<CollectionSearchPage> searchCollections(CollectionSearchRequest request) async {
     final limit = validateLimit(request.limit);
     final offset = request.offset < 0 ? 0 : request.offset;
-    if (request.teacherId case final teacherId?) validatePositiveId(teacherId);
+    final teacherId = request.teacherId;
+    if (teacherId != null) validatePositiveId(teacherId);
     final pattern = '%${normalizeText(request.query).toLowerCase()}%';
     final rows = await _database.rawQuery('''
       SELECT c.id, c.name, c.teacher_id, t.name AS teacher_name, COUNT(DISTINCT m.id) AS audio_count
@@ -187,9 +188,12 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
     final offset = request.offset < 0 ? 0 : request.offset;
     validateLanguage(request.language);
     validateFormat(request.format);
-    if (request.teacherId case final teacherId?) validatePositiveId(teacherId);
-    if (request.categoryId case final categoryId?) validatePositiveId(categoryId);
-    if (request.collectionId case final collectionId?) validatePositiveId(collectionId);
+    final teacherId = request.teacherId;
+    final categoryId = request.categoryId;
+    final collectionId = request.collectionId;
+    if (teacherId != null) validatePositiveId(teacherId);
+    if (categoryId != null) validatePositiveId(categoryId);
+    if (collectionId != null) validatePositiveId(collectionId);
 
     final clauses = <String>["m.type = 'audio'"];
     final values = <Object?>[];
@@ -199,23 +203,25 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
       clauses.add("(LOWER(COALESCE(m.title, '')) LIKE ? OR LOWER(COALESCE(t.name, '')) LIKE ?)");
       values.addAll(<Object?>[pattern, pattern]);
     }
-    if (request.language case final language?) {
+    final language = request.language;
+    final format = request.format;
+    if (language != null) {
       clauses.add('m.language = ?');
       values.add(language);
     }
-    if (request.format case final format?) {
+    if (format != null) {
       clauses.add('m.format = ?');
       values.add(format);
     }
-    if (request.teacherId case final teacherId?) {
+    if (teacherId != null) {
       clauses.add('m.teacher_id = ?');
       values.add(teacherId);
     }
-    if (request.categoryId case final categoryId?) {
+    if (categoryId != null) {
       clauses.add('m.category_id = ?');
       values.add(categoryId);
     }
-    if (request.collectionId case final collectionId?) {
+    if (collectionId != null) {
       clauses.add('EXISTS (SELECT 1 FROM media_collections filter_mc WHERE filter_mc.media_id = m.id AND filter_mc.collection_id = ?)');
       values.add(collectionId);
     }

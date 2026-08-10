@@ -33,10 +33,12 @@ String? validateFormat(String? format) {
 
 List<TeacherSummary> featuredTeachers(List<TeacherSummary> teachers) {
   final byId = <int, TeacherSummary>{for (final teacher in teachers) teacher.id: teacher};
-  return <TeacherSummary>[
-    for (final id in curatedFeaturedTeacherIds)
-      if (byId[id] case final teacher?) teacher,
-  ];
+  final featured = <TeacherSummary>[];
+  for (final id in curatedFeaturedTeacherIds) {
+    final teacher = byId[id];
+    if (teacher != null) featured.add(teacher);
+  }
+  return featured;
 }
 
 List<TeacherSummary> orderTeachersFeaturedFirst(List<TeacherSummary> teachers) {

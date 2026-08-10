@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dhamma_echo/app/app_controller.dart';
 import 'package:dhamma_echo/ui/components/async_message.dart';
 import 'package:dhamma_echo/ui/components/mini_player.dart';
@@ -9,10 +11,15 @@ import 'package:dhamma_echo/ui/screens/settings_screen.dart';
 import 'package:dhamma_echo/ui/screens/teachers_screen.dart';
 import 'package:flutter/material.dart';
 
-class DhammaEchoApp extends StatelessWidget {
+class DhammaEchoApp extends StatefulWidget {
   const DhammaEchoApp({required this.controller, super.key});
   final AppController controller;
 
+  @override
+  State<DhammaEchoApp> createState() => _DhammaEchoAppState();
+}
+
+class _DhammaEchoAppState extends State<DhammaEchoApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,8 +27,14 @@ class DhammaEchoApp extends StatelessWidget {
       title: 'Dhamma Echo',
       themeMode: ThemeMode.light,
       theme: _theme(),
-      home: MainShell(controller: controller),
+      home: MainShell(controller: widget.controller),
     );
+  }
+
+  @override
+  void dispose() {
+    widget.controller.dispose();
+    super.dispose();
   }
 
   ThemeData _theme() {
@@ -55,9 +68,37 @@ class DhammaEchoApp extends StatelessWidget {
   }
 }
 
-class MainShell extends StatelessWidget {
+class MainShell extends StatefulWidget {
   const MainShell({required this.controller, super.key});
   final AppController controller;
+
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
+  AppController get controller => widget.controller;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      unawaited(controller.saveCurrentResume());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

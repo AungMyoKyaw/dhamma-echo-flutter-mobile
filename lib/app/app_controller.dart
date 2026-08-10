@@ -22,6 +22,8 @@ class AppController extends ChangeNotifier {
   final CatalogueRepository _catalogue;
   final LocalStateRepository? _stateRepository;
   final PlaybackController playback;
+  int _seenCompletionEpoch = 0;
+  int? _seenTrackId;
 
   int selectedTab = 0;
   bool initializing = true;
@@ -88,7 +90,7 @@ class AppController extends ChangeNotifier {
   }
 
   void selectTab(int index) {
-    selectedTab = index.clamp(0, 4);
+    selectedTab = index.clamp(0, 4).toInt();
     notifyListeners();
   }
 
@@ -99,15 +101,15 @@ class AppController extends ChangeNotifier {
 
   Future<void> setLanguage(String? language) async {
     audioRequest = language == null
-        ? audioRequest.copyWith(clearLanguage: true, clearTeacher: true, offset: 0)
-        : audioRequest.copyWith(language: language, clearTeacher: true, offset: 0);
+        ? audioRequest.copyWith(clearLanguage: true, offset: 0)
+        : audioRequest.copyWith(language: language, offset: 0);
     await searchAudio();
   }
 
   Future<void> setFormat(String? format) async {
     audioRequest = format == null
-        ? audioRequest.copyWith(clearFormat: true, clearTeacher: true, offset: 0)
-        : audioRequest.copyWith(format: format, clearTeacher: true, offset: 0);
+        ? audioRequest.copyWith(clearFormat: true, offset: 0)
+        : audioRequest.copyWith(format: format, offset: 0);
     await searchAudio();
   }
 
@@ -246,15 +248,34 @@ class AppController extends ChangeNotifier {
   }
 
   Future<bool> play(AudioTrack track) async {
+    final previous = playback.current;
+    if (previous != null && previous.id != track.id) {
+      await saveCurrentResume();
+    }
     final didPlay = await playback.play(track, resumeAt: library.resume[track.id] ?? 0);
     if (!didPlay) return false;
-    _recordHistory(track.id);
+    if (previous?.id == track.id) {
+      _recordHistory(track.id);
+    }
     await _persist();
     notifyListeners();
     return true;
   }
 
   void enqueue(AudioTrack track) => playback.enqueue(track);
+
+  Future<bool> playNext({bool saveCurrent = true}) async {
+    final next = playback.nextInQueue;
+    if (next == null) return false;
+    if (saveCurrent) {
+      await saveCurrentResume();
+    }
+    final didPlay = await playback.playNext(resumeAt: library.resume[next.id] ?? 0);
+    if (didPlay) {
+      await _persist();
+    }
+    return didPlay;
+  }
 
   Future<void> toggleFavorite(int id) async {
     final favorites = <int>[...library.favorites];
@@ -335,6 +356,27 @@ class AppController extends ChangeNotifier {
   }
 
   void _onPlaybackChanged() {
+    final current = playback.current;
+    if (current != null && current.id != _seenTrackId) {
+      _seenTrackId = current.id;
+      _recordHistory(current.id);
+      unawaited(_persist());
+    }
+    if (playback.completionEpoch != _seenCompletionEpoch) {
+      _seenCompletionEpoch = playback.completionEpoch;
+      if (current != null && library.resume.containsKey(current.id)) {
+        final resume = <int, double>{...library.resume}..remove(current.id);
+        library = LibraryState(
+          favorites: library.favorites,
+          history: library.history,
+          resume: resume,
+        );
+        unawaited(_persist());
+      }
+      if (playback.nextInQueue != null) {
+        unawaited(playNext(saveCurrent: false));
+      }
+    }
     notifyListeners();
   }
 

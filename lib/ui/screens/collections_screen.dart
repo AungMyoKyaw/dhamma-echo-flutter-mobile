@@ -1,5 +1,6 @@
 import 'package:dhamma_echo/app/app_controller.dart';
 import 'package:dhamma_echo/core/catalogue_policy.dart';
+import 'package:dhamma_echo/domain/models.dart';
 import 'package:dhamma_echo/ui/components/async_message.dart';
 import 'package:dhamma_echo/ui/components/collection_card.dart';
 import 'package:dhamma_echo/ui/screens/collection_detail_screen.dart';
@@ -94,7 +95,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     );
   }
 
-  void _open(BuildContext context, collection) {
+  void _open(BuildContext context, CollectionSummary collection) {
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(builder: (_) => CollectionDetailScreen(controller: widget.controller, collection: collection)),
     );

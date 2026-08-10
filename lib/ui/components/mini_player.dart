@@ -51,7 +51,7 @@ class MiniPlayer extends StatelessWidget {
                 ),
                 IconButton(
                   tooltip: 'Play next',
-                  onPressed: controller.playback.queue.isEmpty ? null : controller.playback.playNext,
+                  onPressed: controller.playback.queue.isEmpty ? null : controller.playNext,
                   icon: const Icon(Icons.skip_next_rounded),
                 ),
               ],

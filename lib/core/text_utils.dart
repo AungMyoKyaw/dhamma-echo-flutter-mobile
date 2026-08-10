@@ -4,7 +4,7 @@ String normalizeText(String value) {
 
 String formatDuration(num value) {
   final numeric = value.isFinite ? value : 0;
-  final total = numeric.floor().clamp(0, 1 << 31);
+  final total = numeric.floor().clamp(0, 1 << 31).toInt();
   final hours = total ~/ 3600;
   final minutes = (total % 3600) ~/ 60;
   final seconds = total % 60;
@@ -16,5 +16,5 @@ String formatDuration(num value) {
 
 double clampFinite(double value, double minimum, double maximum) {
   if (!value.isFinite) return minimum;
-  return value.clamp(minimum, maximum);
+  return value.clamp(minimum, maximum).toDouble();
 }

@@ -23,9 +23,11 @@ class PlaybackController extends ChangeNotifier {
   String _error = '';
   double _volume = 0.8;
   double _rate = 1;
+  int _completionEpoch = 0;
 
   AudioTrack? get current => _current;
   List<AudioTrack> get queue => List<AudioTrack>.unmodifiable(_queue);
+  AudioTrack? get nextInQueue => _queue.isEmpty ? null : _queue.first;
   bool get playing => _playing;
   bool get loading => _loading;
   Duration get position => _position;
@@ -33,6 +35,7 @@ class PlaybackController extends ChangeNotifier {
   String get error => _error;
   double get volume => _volume;
   double get rate => _rate;
+  int get completionEpoch => _completionEpoch;
 
   Future<bool> play(AudioTrack track, {double resumeAt = 0}) async {
     final candidates = mediaUrlCandidates(track.url, track.format);
@@ -85,7 +88,7 @@ class PlaybackController extends ChangeNotifier {
 
   Future<void> seek(Duration value) async {
     final maximum = _duration > Duration.zero ? _duration : const Duration(days: 365);
-    final milliseconds = value.inMilliseconds.clamp(0, maximum.inMilliseconds);
+    final milliseconds = value.inMilliseconds.clamp(0, maximum.inMilliseconds).toInt();
     _position = Duration(milliseconds: milliseconds);
     await _port.seek(_position);
     notifyListeners();
@@ -121,10 +124,15 @@ class PlaybackController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> playNext() async {
+  Future<bool> playNext({double resumeAt = 0}) async {
     if (_queue.isEmpty) return false;
-    final next = _queue.removeAt(0);
-    return play(next);
+    final next = _queue.first;
+    final didPlay = await play(next, resumeAt: resumeAt);
+    if (didPlay && _queue.isNotEmpty && _queue.first.id == next.id) {
+      _queue.removeAt(0);
+      notifyListeners();
+    }
+    return didPlay;
   }
 
   void _handleEvent(PlaybackPortEvent event) {
@@ -138,7 +146,10 @@ class PlaybackController extends ChangeNotifier {
         _duration = duration;
       case PlaybackEndedEvent():
         _playing = false;
-        unawaited(playNext());
+        _position = Duration.zero;
+        _completionEpoch += 1;
+        notifyListeners();
+        return;
       case PlaybackErrorEvent(:final message):
         _error = message;
         _loading = false;
