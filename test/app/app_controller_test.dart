@@ -45,6 +45,25 @@ void main() {
     expect(controller.library.resume[trackOne.id], 42);
   });
 
+  test('automatic queue advancement records the next talk in history', () async {
+    final port = RecordingPlaybackPort();
+    final controller = AppController(
+      catalogue: RecordingCatalogue(),
+      playback: PlaybackController(port),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.initialize(persistedState: const PersistedState.defaults());
+    await controller.play(trackOne);
+    controller.enqueue(trackTwo);
+    port.emit(const PlaybackEndedEvent());
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.playback.current?.id, trackTwo.id);
+    expect(controller.library.history.first.id, trackTwo.id);
+  });
+
   test('completed playback clears the stored resume position', () async {
     final port = RecordingPlaybackPort();
     final controller = AppController(
