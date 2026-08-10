@@ -38,13 +38,13 @@ Detail screens push above the root navigator and restore the originating tab sta
 A persistent mini-player appears directly above bottom navigation when a track is selected. Tapping it opens a full player sheet/page with:
 
 - play/pause
-- previous/next queue item
+- next queued item
 - ±15 second jump
 - seek slider
 - playback speed
 - volume
 - favorite toggle
-- queue sheet
+- queue list
 
 No background-audio package is added in v1. Playback behavior remains foreground-oriented to preserve desktop scope.
 
@@ -71,7 +71,7 @@ Modules:
 
 The supplied desktop Git bundle contains a Git LFS pointer for the current 27,750,400-byte database, SHA-256 `d88cfda6d761d0e682dac3bf29ab3b1d7019496a114defe057bfc55a6e746d31`, not the LFS object bytes.
 
-The mobile source therefore contains a tiny deterministic fixture database for tests and debug preview. Release bootstrap must replace it with the exact production database. `tool/fetch_catalogue.py` downloads the latest desktop macOS app archive from the public GitHub release, extracts `dhamma.db`, and verifies both exact size and SHA-256 before replacement. Release mode rejects the fixture database.
+The mobile source therefore contains a tiny deterministic fixture database for tests and debug preview. Release bootstrap must replace it with the exact production database. `tool/catalogue.py` downloads the latest desktop macOS app archive from the public GitHub release, extracts `dhamma.db`, and verifies both exact size and SHA-256 before replacement. Release mode rejects the fixture database.
 
 ## Visual design
 

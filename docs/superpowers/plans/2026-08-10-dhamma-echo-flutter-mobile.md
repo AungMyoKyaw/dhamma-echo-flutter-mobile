@@ -6,7 +6,7 @@
 
 **Architecture:** Framework-native Flutter UI and `ChangeNotifier` state wrap a read-only SQLite catalogue repository, a small local state store, and a narrow `just_audio` playback adapter. All user-controlled catalogue queries remain parameterized and playback URLs pass a strict host/format policy before reaching the player.
 
-**Tech Stack:** Flutter 3.44.x / Dart 3.12+, Material 3, sqflite 2.4.3, just_audio 0.10.6, path 1.9.1, flutter_test, integration_test, sqflite_common_ffi 2.4.2.
+**Tech Stack:** Flutter 3.44.x / Dart 3.12+, Material 3, sqflite 2.4.3, just_audio 0.10.6, path 1.9.1, flutter_test, sqflite_common_ffi 2.4.2.
 
 ## Global Constraints
 
