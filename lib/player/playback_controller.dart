@@ -59,6 +59,10 @@ class PlaybackController extends ChangeNotifier {
         }
         await _port.play();
         _current = track;
+        _position = resumeAt.isFinite && resumeAt > 0
+            ? Duration(milliseconds: (resumeAt * 1000).round())
+            : Duration.zero;
+        _duration = Duration.zero;
         _loading = false;
         _playing = true;
         notifyListeners();

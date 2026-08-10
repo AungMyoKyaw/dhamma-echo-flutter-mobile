@@ -24,6 +24,7 @@ class AppController extends ChangeNotifier {
   final PlaybackController playback;
   int _seenCompletionEpoch = 0;
   int? _seenTrackId;
+  bool _wasPlaying = false;
 
   int selectedTab = 0;
   bool initializing = true;
@@ -307,13 +308,22 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> saveCurrentResume() async {
+    if (_updateResume(force: true)) {
+      await _persist();
+    }
+  }
+
+  bool _updateResume({required bool force}) {
     final current = playback.current;
-    if (current == null) return;
+    if (current == null) return false;
+    final position = playback.position.inMilliseconds / 1000;
+    final saved = library.resume[current.id] ?? 0;
+    if (!force && (saved - position).abs() < 5) return false;
     final resume = <int, double>{...library.resume};
-    resume[current.id] = playback.position.inMilliseconds / 1000;
+    resume[current.id] = position;
     if (resume.length > 500) resume.remove(resume.keys.first);
     library = LibraryState(favorites: library.favorites, history: library.history, resume: resume);
-    await _persist();
+    return true;
   }
 
   void _recordHistory(int id) {
@@ -362,21 +372,25 @@ class AppController extends ChangeNotifier {
       _recordHistory(current.id);
       unawaited(_persist());
     }
-    if (playback.completionEpoch != _seenCompletionEpoch) {
+
+    final completed = playback.completionEpoch != _seenCompletionEpoch;
+    if (completed) {
       _seenCompletionEpoch = playback.completionEpoch;
-      if (current != null && library.resume.containsKey(current.id)) {
-        final resume = <int, double>{...library.resume}..remove(current.id);
-        library = LibraryState(
-          favorites: library.favorites,
-          history: library.history,
-          resume: resume,
-        );
+      if (_updateResume(force: true)) {
         unawaited(_persist());
       }
       if (playback.nextInQueue != null) {
         unawaited(playNext(saveCurrent: false));
       }
+    } else if (_wasPlaying && !playback.playing) {
+      if (_updateResume(force: true)) {
+        unawaited(_persist());
+      }
+    } else if (_updateResume(force: false)) {
+      unawaited(_persist());
     }
+
+    _wasPlaying = playback.playing;
     notifyListeners();
   }
 
