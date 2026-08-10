@@ -64,6 +64,34 @@ void main() {
     expect(controller.library.history.first.id, trackTwo.id);
   });
 
+  test('automatic queue advancement restores the queued talk resume position', () async {
+    final port = RecordingPlaybackPort();
+    final controller = AppController(
+      catalogue: RecordingCatalogue(),
+      playback: PlaybackController(port),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.initialize(
+      persistedState: const PersistedState(
+        library: LibraryState(
+          favorites: <int>[],
+          history: <HistoryEntry>[],
+          resume: <int, double>{2: 33},
+        ),
+        settings: SettingsState.defaults(),
+      ),
+    );
+    await controller.play(trackOne);
+    controller.enqueue(trackTwo);
+    port.emit(const PlaybackEndedEvent());
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.playback.current?.id, trackTwo.id);
+    expect(port.lastSeek, const Duration(seconds: 33));
+  });
+
   test('completed playback clears the stored resume position', () async {
     final port = RecordingPlaybackPort();
     final controller = AppController(
@@ -161,6 +189,8 @@ class RecordingCatalogue implements CatalogueRepository {
 class RecordingPlaybackPort implements PlaybackPort {
   final StreamController<PlaybackPortEvent> _events = StreamController<PlaybackPortEvent>.broadcast();
 
+  Duration? lastSeek;
+
   void emit(PlaybackPortEvent event) => _events.add(event);
 
   @override
@@ -179,7 +209,9 @@ class RecordingPlaybackPort implements PlaybackPort {
   Future<void> play() async {}
 
   @override
-  Future<void> seek(Duration position) async {}
+  Future<void> seek(Duration position) async {
+    lastSeek = position;
+  }
 
   @override
   Future<void> setSpeed(double value) async {}
