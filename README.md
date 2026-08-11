@@ -61,14 +61,15 @@ python3 -m pip install -r requirements-tooling.txt
 
 ## Catalogue
 
-The Git repository stores a small deterministic development fixture at `assets/catalogue/dhamma.db`. It must never be used for a production package.
+The Git repository ships the verified production SQLite catalogue at `assets/catalogue/dhamma.db`. Browsing metadata is local application data; the network is only used when the player opens an approved audio URL stored in SQLite.
 
-Fetch the exact current desktop catalogue from the latest public Dhamma Echo desktop release and verify it against the Git LFS object identity:
+Verify the checked-in catalogue before building:
 
 ```bash
-make catalogue
 make verify-catalogue
 ```
+
+`make catalogue` remains an explicit maintenance command for refreshing the asset from the public desktop release. It is not part of normal development or CI.
 
 Production identity:
 
@@ -77,7 +78,7 @@ size    27750400 bytes
 sha256  d88cfda6d761d0e682dac3bf29ab3b1d7019496a114defe057bfc55a6e746d31
 ```
 
-`tool/catalogue.py` extracts the database from a packaged desktop `.app.tar.gz`, reads the file in memory rather than extracting arbitrary archive paths, verifies both size and SHA-256, and replaces the asset atomically.
+`tool/catalogue.py` verifies the bundled database by exact byte length and SHA-256. Its optional `fetch` path extracts the database from a packaged desktop `.app.tar.gz`, reads the file in memory rather than extracting arbitrary archive paths, verifies identity, and replaces the asset atomically. The app copies the bundled database into its database directory only when needed and opens it read-only.
 
 ## Bootstrap Android and iOS
 
@@ -160,7 +161,7 @@ See [SECURITY.md](SECURITY.md) and the [system context diagram](docs/architectur
 
 ## Troubleshooting
 
-**Release app reports a missing production catalogue** — run `make catalogue` and `make verify-catalogue` before packaging.
+**Catalogue verification fails** — restore the checked-in production `assets/catalogue/dhamma.db` or explicitly refresh it with `make catalogue`, then run `make verify-catalogue`.
 
 **Network MP3 does not play** — the player intentionally rejects any host outside the two approved Dhamma Download hostnames and rejects WMA.
 
