@@ -44,6 +44,32 @@ void main() {
     );
   });
 
+  testWidgets('theme uses neutral surfaces and matched Material 3 roles', (
+    tester,
+  ) async {
+    final controller = AppController(
+      catalogue: FakeCatalogue(),
+      playback: PlaybackController(FakePlaybackPort()),
+    );
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await tester.pumpWidget(DhammaEchoApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    final theme = app.theme!;
+    expect(theme.scaffoldBackgroundColor, const Color(0xFFF8FAF7));
+    expect(
+      theme.navigationBarTheme.indicatorColor,
+      theme.colorScheme.secondaryContainer,
+    );
+    expect(
+      theme.searchBarTheme.elevation?.resolve(<WidgetState>{}),
+      0,
+    );
+  });
+
   testWidgets('selecting a talk shows the persistent mini player', (
     tester,
   ) async {

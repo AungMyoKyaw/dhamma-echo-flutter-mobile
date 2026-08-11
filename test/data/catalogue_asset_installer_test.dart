@@ -17,14 +17,14 @@ void main() {
   });
 
   test(
-    'debug catalogue validation accepts a structurally valid SQLite fixture',
+    'catalogue validation rejects a fixture-sized SQLite database',
     () {
       final bytes = Uint8List.fromList(<int>[
         ...ascii.encode('SQLite format 3\u0000'),
         ...List<int>.filled(64, 0),
       ]);
 
-      expect(() => installer.validateReleaseAsset(bytes), returnsNormally);
+      expect(() => installer.validateReleaseAsset(bytes), throwsStateError);
     },
   );
 }
