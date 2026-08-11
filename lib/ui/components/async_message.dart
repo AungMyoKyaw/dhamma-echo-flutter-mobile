@@ -21,11 +21,11 @@ class AsyncMessage extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(icon, size: 48, color: colors.primary),
+            Icon(icon, size: 44, color: colors.primary),
             const SizedBox(height: 16),
             Text(
               title,

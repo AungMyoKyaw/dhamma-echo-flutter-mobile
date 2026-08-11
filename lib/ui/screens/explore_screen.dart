@@ -60,7 +60,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
           onSubmitted: controller.setAudioQuery,
           onChanged: (_) => setState(() {}),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
+        Text('Language', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -80,6 +82,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
               selected: controller.audioRequest.language == 'english',
               onSelected: (_) => controller.setLanguage('english'),
             ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text('Format', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: <Widget>[
             ChoiceChip(
               label: const Text('All formats'),
               selected: controller.audioRequest.format == null,

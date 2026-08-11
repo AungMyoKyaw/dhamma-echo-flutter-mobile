@@ -20,7 +20,8 @@ class TrackTile extends StatelessWidget {
     final isCurrent = controller.playback.current?.id == track.id;
     return ListTile(
       tileColor: isCurrent ? colors.primary.withValues(alpha: 0.06) : null,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      shape: Border(bottom: BorderSide(color: colors.outlineVariant)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       leading: IconButton.filledTonal(
         tooltip: track.playable
             ? 'Play ${track.title}'
@@ -37,6 +38,9 @@ class TrackTile extends StatelessWidget {
         '${track.teacherName} · ${track.language} · ${track.format.toUpperCase()}',
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
       ),
       trailing: Wrap(
         spacing: 0,

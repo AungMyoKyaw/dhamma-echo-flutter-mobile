@@ -15,7 +15,7 @@ class LibraryScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: <Widget>[
         Text(
-          'Continue listening',
+          'Your library',
           style: Theme.of(
             context,
           ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
@@ -29,10 +29,12 @@ class LibraryScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         if (favorites.isEmpty)
-          const AsyncMessage(
-            icon: Icons.favorite_border,
-            title: 'No favorites yet',
-            message: 'Favorite a talk and it will appear here.',
+          const Card(
+            child: AsyncMessage(
+              icon: Icons.favorite_border,
+              title: 'No favorites yet',
+              message: 'Favorite a talk and it will appear here.',
+            ),
           )
         else
           Card(
@@ -54,10 +56,12 @@ class LibraryScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         if (recent.isEmpty)
-          const AsyncMessage(
-            icon: Icons.history,
-            title: 'Nothing played yet',
-            message: 'Your recent listening history will stay on this device.',
+          const Card(
+            child: AsyncMessage(
+              icon: Icons.history,
+              title: 'Nothing played yet',
+              message: 'Your recent listening history will stay on this device.',
+            ),
           )
         else
           Card(

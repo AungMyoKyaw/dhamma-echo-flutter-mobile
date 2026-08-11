@@ -29,7 +29,9 @@ class CollectionCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 collection.teacherName,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 10),
               Row(

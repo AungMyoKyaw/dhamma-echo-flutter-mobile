@@ -37,7 +37,12 @@ class TeacherCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 4),
-                    Text('${teacher.audioCount} talks'),
+                    Text(
+                      '${teacher.audioCount} talks',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     if (featured) ...<Widget>[
                       const SizedBox(height: 8),
                       const _FeaturedBadge(),
@@ -62,7 +67,7 @@ class _FeaturedBadge extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.1),
+        color: colors.secondaryContainer,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
@@ -70,7 +75,7 @@ class _FeaturedBadge extends StatelessWidget {
         child: Text(
           'FEATURED',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: colors.primary,
+            color: colors.onSecondaryContainer,
             fontWeight: FontWeight.w700,
           ),
         ),
