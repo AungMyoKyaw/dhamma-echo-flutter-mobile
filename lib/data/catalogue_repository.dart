@@ -3,7 +3,7 @@ import 'package:dhamma_echo/domain/models.dart';
 abstract interface class CatalogueRepository {
   Future<CatalogueSummary> getSummary();
   Future<List<AudioCategory>> listAudioCategories();
-  Future<List<TeacherSummary>> listFeaturedTeachers({int limit = 100});
+  Future<List<TeacherSummary>> listTeachers();
   Future<List<TeacherSummary>> searchTeachers(String query, {int limit = 100});
   Future<TeacherDetail> getTeacher(int id);
   Future<CollectionSearchPage> searchCollections(

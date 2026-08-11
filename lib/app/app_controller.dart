@@ -95,7 +95,7 @@ class AppController extends ChangeNotifier {
       final values = await Future.wait<Object>(<Future<Object>>[
         _catalogue.getSummary(),
         _catalogue.listAudioCategories(),
-        _catalogue.listFeaturedTeachers(limit: 100),
+        _catalogue.listTeachers(),
       ]);
       summary = values[0] as CatalogueSummary;
       categories = values[1] as List<AudioCategory>;

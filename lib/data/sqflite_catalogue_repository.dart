@@ -53,19 +53,14 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
   }
 
   @override
-  Future<List<TeacherSummary>> listFeaturedTeachers({int limit = 100}) async {
-    validateLimit(limit);
-    final rows = await _database.rawQuery(
-      '''
+  Future<List<TeacherSummary>> listTeachers() async {
+    final rows = await _database.rawQuery('''
       SELECT t.id, t.name, COUNT(m.id) AS audio_count
       FROM teachers t
-      JOIN media m ON m.teacher_id = t.id AND m.type = 'audio'
+      LEFT JOIN media m ON m.teacher_id = t.id AND m.type = 'audio'
       GROUP BY t.id, t.name
-      ORDER BY audio_count DESC, LOWER(t.name), t.id
-      LIMIT ?
-    ''',
-      <Object?>[limit],
-    );
+      ORDER BY LOWER(t.name), t.id
+    ''');
     return rows.map(_teacherSummary).toList(growable: false);
   }
 
