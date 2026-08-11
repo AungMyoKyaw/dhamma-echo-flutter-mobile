@@ -70,6 +70,27 @@ void main() {
     );
   });
 
+  testWidgets('filters and library use clear section labels', (tester) async {
+    final controller = AppController(
+      catalogue: FakeCatalogue(),
+      playback: PlaybackController(FakePlaybackPort()),
+    );
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await tester.pumpWidget(DhammaEchoApp(controller: controller));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Explore'));
+    await tester.pumpAndSettle();
+    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('Format'), findsOneWidget);
+
+    await tester.tap(find.text('Library'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your library'), findsOneWidget);
+  });
+
   testWidgets('selecting a talk shows the persistent mini player', (
     tester,
   ) async {
