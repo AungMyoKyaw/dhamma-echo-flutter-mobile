@@ -13,9 +13,11 @@ class AppController extends ChangeNotifier {
     required CatalogueRepository catalogue,
     required PlaybackController playback,
     LocalStateRepository? stateRepository,
-  })  : _catalogue = catalogue,
-        playback = playback,
-        _stateRepository = stateRepository {
+    // ignore: prefer_initializing_formals (private field, public parameter)
+  }) : _catalogue = catalogue,
+       playback = playback,
+       // ignore: prefer_initializing_formals (private field, public parameter)
+       _stateRepository = stateRepository {
     playback.addListener(_onPlaybackChanged);
   }
 
@@ -29,7 +31,12 @@ class AppController extends ChangeNotifier {
   int selectedTab = 0;
   bool initializing = true;
   String initializationError = '';
-  CatalogueSummary summary = const CatalogueSummary(totalAudio: 0, totalTeachers: 0, myanmarAudio: 0, englishAudio: 0);
+  CatalogueSummary summary = const CatalogueSummary(
+    totalAudio: 0,
+    totalTeachers: 0,
+    myanmarAudio: 0,
+    englishAudio: 0,
+  );
   List<AudioCategory> categories = const <AudioCategory>[];
   List<TeacherSummary> teachers = const <TeacherSummary>[];
   List<TeacherSummary> teacherResults = const <TeacherSummary>[];
@@ -37,14 +44,26 @@ class AppController extends ChangeNotifier {
   List<AudioTrack> favoriteTracks = const <AudioTrack>[];
 
   AudioSearchRequest audioRequest = const AudioSearchRequest(limit: 50);
-  AudioSearchPage audioPage = const AudioSearchPage(items: <AudioTrack>[], total: 0, limit: 50, offset: 0);
+  AudioSearchPage audioPage = const AudioSearchPage(
+    items: <AudioTrack>[],
+    total: 0,
+    limit: 50,
+    offset: 0,
+  );
   bool audioLoading = false;
   bool audioLoadingMore = false;
   String audioError = '';
   String audioLoadMoreError = '';
 
-  CollectionSearchRequest collectionRequest = const CollectionSearchRequest(limit: 24);
-  CollectionSearchPage collectionPage = const CollectionSearchPage(items: <CollectionSummary>[], total: 0, limit: 24, offset: 0);
+  CollectionSearchRequest collectionRequest = const CollectionSearchRequest(
+    limit: 24,
+  );
+  CollectionSearchPage collectionPage = const CollectionSearchPage(
+    items: <CollectionSummary>[],
+    total: 0,
+    limit: 24,
+    offset: 0,
+  );
   bool collectionsLoading = false;
   bool collectionsLoadingMore = false;
   String collectionsError = '';
@@ -54,8 +73,10 @@ class AppController extends ChangeNotifier {
   SettingsState settings = const SettingsState.defaults();
 
   bool get hasMoreAudio => audioPage.items.length < audioPage.total;
-  bool get hasMoreCollections => collectionPage.items.length < collectionPage.total;
-  List<TeacherSummary> get orderedTeachers => orderTeachersFeaturedFirst(teachers);
+  bool get hasMoreCollections =>
+      collectionPage.items.length < collectionPage.total;
+  List<TeacherSummary> get orderedTeachers =>
+      orderTeachersFeaturedFirst(teachers);
   List<TeacherSummary> get homeFeaturedTeachers => featuredTeachers(teachers);
 
   Future<void> initialize({PersistedState? persistedState}) async {
@@ -63,7 +84,10 @@ class AppController extends ChangeNotifier {
     initializationError = '';
     notifyListeners();
     try {
-      final state = persistedState ?? await _stateRepository?.load() ?? const PersistedState.defaults();
+      final state =
+          persistedState ??
+          await _stateRepository?.load() ??
+          const PersistedState.defaults();
       library = state.library;
       settings = state.settings;
       await playback.setVolume(settings.volume);
@@ -96,7 +120,10 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> setAudioQuery(String query) async {
-    audioRequest = audioRequest.copyWith(query: normalizeText(query), offset: 0);
+    audioRequest = audioRequest.copyWith(
+      query: normalizeText(query),
+      offset: 0,
+    );
     await searchAudio();
   }
 
@@ -153,7 +180,9 @@ class AppController extends ChangeNotifier {
       audioError = '';
     }
     notifyListeners();
-    final request = append ? audioRequest.copyWith(offset: audioPage.items.length) : audioRequest.copyWith(offset: 0);
+    final request = append
+        ? audioRequest.copyWith(offset: audioPage.items.length)
+        : audioRequest.copyWith(offset: 0);
     try {
       final page = await _catalogue.searchAudio(request);
       if (append) {
@@ -166,7 +195,12 @@ class AppController extends ChangeNotifier {
           offset: 0,
         );
       } else {
-        audioPage = AudioSearchPage(items: page.items, total: page.total, limit: page.limit, offset: 0);
+        audioPage = AudioSearchPage(
+          items: page.items,
+          total: page.total,
+          limit: page.limit,
+          offset: 0,
+        );
       }
     } on Object catch (error) {
       if (append) {
@@ -182,7 +216,10 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> setCollectionQuery(String query) async {
-    collectionRequest = collectionRequest.copyWith(query: normalizeText(query), offset: 0);
+    collectionRequest = collectionRequest.copyWith(
+      query: normalizeText(query),
+      offset: 0,
+    );
     await searchCollections();
   }
 
@@ -209,8 +246,12 @@ class AppController extends ChangeNotifier {
     try {
       final page = await _catalogue.searchCollections(request);
       if (append) {
-        final known = collectionPage.items.map((collection) => collection.id).toSet();
-        final appended = page.items.where((collection) => !known.contains(collection.id));
+        final known = collectionPage.items
+            .map((collection) => collection.id)
+            .toSet();
+        final appended = page.items.where(
+          (collection) => !known.contains(collection.id),
+        );
         collectionPage = CollectionSearchPage(
           items: <CollectionSummary>[...collectionPage.items, ...appended],
           total: page.total,
@@ -218,7 +259,12 @@ class AppController extends ChangeNotifier {
           offset: 0,
         );
       } else {
-        collectionPage = CollectionSearchPage(items: page.items, total: page.total, limit: page.limit, offset: 0);
+        collectionPage = CollectionSearchPage(
+          items: page.items,
+          total: page.total,
+          limit: page.limit,
+          offset: 0,
+        );
       }
     } on Object catch (error) {
       if (append) {
@@ -242,10 +288,13 @@ class AppController extends ChangeNotifier {
   }
 
   Future<TeacherDetail> getTeacher(int id) => _catalogue.getTeacher(id);
-  Future<CollectionDetail> getCollection(int id) => _catalogue.getCollection(id);
+  Future<CollectionDetail> getCollection(int id) =>
+      _catalogue.getCollection(id);
 
   Future<AudioSearchPage> teacherTalks(int teacherId, {int offset = 0}) {
-    return _catalogue.searchAudio(AudioSearchRequest(teacherId: teacherId, limit: 50, offset: offset));
+    return _catalogue.searchAudio(
+      AudioSearchRequest(teacherId: teacherId, limit: 50, offset: offset),
+    );
   }
 
   Future<bool> play(AudioTrack track) async {
@@ -253,7 +302,10 @@ class AppController extends ChangeNotifier {
     if (previous != null && previous.id != track.id) {
       await saveCurrentResume();
     }
-    final didPlay = await playback.play(track, resumeAt: library.resume[track.id] ?? 0);
+    final didPlay = await playback.play(
+      track,
+      resumeAt: library.resume[track.id] ?? 0,
+    );
     if (!didPlay) return false;
     if (previous?.id == track.id) {
       _recordHistory(track.id);
@@ -271,7 +323,9 @@ class AppController extends ChangeNotifier {
     if (saveCurrent) {
       await saveCurrentResume();
     }
-    final didPlay = await playback.playNext(resumeAt: library.resume[next.id] ?? 0);
+    final didPlay = await playback.playNext(
+      resumeAt: library.resume[next.id] ?? 0,
+    );
     if (didPlay) {
       await _persist();
     }
@@ -285,7 +339,11 @@ class AppController extends ChangeNotifier {
     } else {
       favorites.add(id);
     }
-    library = LibraryState(favorites: favorites, history: library.history, resume: library.resume);
+    library = LibraryState(
+      favorites: favorites,
+      history: library.history,
+      resume: library.resume,
+    );
     await _loadFavoriteTracks();
     await _persist();
     notifyListeners();
@@ -295,14 +353,20 @@ class AppController extends ChangeNotifier {
 
   Future<void> setVolume(double value) async {
     await playback.setVolume(value);
-    settings = SettingsState(playbackRate: settings.playbackRate, volume: playback.volume);
+    settings = SettingsState(
+      playbackRate: settings.playbackRate,
+      volume: playback.volume,
+    );
     await _persist();
     notifyListeners();
   }
 
   Future<void> setPlaybackRate(double value) async {
     await playback.setRate(value);
-    settings = SettingsState(playbackRate: playback.rate, volume: settings.volume);
+    settings = SettingsState(
+      playbackRate: playback.rate,
+      volume: settings.volume,
+    );
     await _persist();
     notifyListeners();
   }
@@ -322,25 +386,41 @@ class AppController extends ChangeNotifier {
     final resume = <int, double>{...library.resume};
     resume[current.id] = position;
     if (resume.length > 500) resume.remove(resume.keys.first);
-    library = LibraryState(favorites: library.favorites, history: library.history, resume: resume);
+    library = LibraryState(
+      favorites: library.favorites,
+      history: library.history,
+      resume: resume,
+    );
     return true;
   }
 
   void _recordHistory(int id) {
     final history = <HistoryEntry>[
-      HistoryEntry(id: id, playedAt: DateTime.now().millisecondsSinceEpoch.toDouble()),
+      HistoryEntry(
+        id: id,
+        playedAt: DateTime.now().millisecondsSinceEpoch.toDouble(),
+      ),
       ...library.history.where((entry) => entry.id != id),
     ].take(100).toList(growable: false);
-    library = LibraryState(favorites: library.favorites, history: history, resume: library.resume);
+    library = LibraryState(
+      favorites: library.favorites,
+      history: history,
+      resume: library.resume,
+    );
     unawaited(_loadRecentTracks());
   }
 
   Future<void> _loadLibraryTracks() async {
-    await Future.wait<void>(<Future<void>>[_loadRecentTracks(), _loadFavoriteTracks()]);
+    await Future.wait<void>(<Future<void>>[
+      _loadRecentTracks(),
+      _loadFavoriteTracks(),
+    ]);
   }
 
   Future<void> _loadRecentTracks() async {
-    recentTracks = await _resolveTracks(library.history.map((entry) => entry.id).take(12));
+    recentTracks = await _resolveTracks(
+      library.history.map((entry) => entry.id).take(12),
+    );
     notifyListeners();
   }
 
@@ -362,7 +442,9 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
-    await _stateRepository?.save(PersistedState(library: library, settings: settings));
+    await _stateRepository?.save(
+      PersistedState(library: library, settings: settings),
+    );
   }
 
   void _onPlaybackChanged() {

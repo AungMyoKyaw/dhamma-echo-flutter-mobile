@@ -7,7 +7,14 @@ class LocalStateRepository {
   LocalStateRepository(this._file);
 
   static const int version = 1;
-  static const Set<double> allowedRates = <double>{0.75, 1, 1.25, 1.5, 1.75, 2};
+  static const List<double> allowedRates = <double>[
+    0.75,
+    1,
+    1.25,
+    1.5,
+    1.75,
+    2,
+  ];
 
   final File _file;
 
@@ -47,10 +54,16 @@ class LocalStateRepository {
       'library': <String, Object?>{
         'favorites': state.library.favorites,
         'history': state.library.history
-            .map((entry) => <String, Object?>{'id': entry.id, 'playedAt': entry.playedAt})
+            .map(
+              (entry) => <String, Object?>{
+                'id': entry.id,
+                'playedAt': entry.playedAt,
+              },
+            )
             .toList(growable: false),
         'resume': <String, Object?>{
-          for (final entry in state.library.resume.entries) entry.key.toString(): entry.value,
+          for (final entry in state.library.resume.entries)
+            entry.key.toString(): entry.value,
         },
       },
       'settings': <String, Object?>{
@@ -66,7 +79,9 @@ class LocalStateRepository {
     final rawFavorites = value['favorites'];
     if (rawFavorites is List<Object?>) {
       for (final item in rawFavorites) {
-        if (item is int && item > 0 && !favorites.contains(item)) favorites.add(item);
+        if (item is int && item > 0 && !favorites.contains(item)) {
+          favorites.add(item);
+        }
       }
     }
     final history = <HistoryEntry>[];
@@ -90,11 +105,17 @@ class LocalStateRepository {
       for (final entry in rawResume.entries) {
         final id = int.tryParse(entry.key);
         final position = entry.value;
-        if (id != null && id > 0 && position is num && position.isFinite && position >= 0) {
+        if (id != null &&
+            id > 0 &&
+            position is num &&
+            position.isFinite &&
+            position >= 0) {
           valid.add(MapEntry<int, double>(id, position.toDouble()));
         }
       }
-      for (final entry in valid.skip(valid.length > 500 ? valid.length - 500 : 0)) {
+      for (final entry in valid.skip(
+        valid.length > 500 ? valid.length - 500 : 0,
+      )) {
         resume[entry.key] = entry.value;
       }
     }
@@ -127,13 +148,17 @@ class LocalStateRepository {
         .take(100)
         .toList(growable: false);
     final entries = state.resume.entries
-        .where((entry) => entry.key > 0 && entry.value.isFinite && entry.value >= 0)
+        .where(
+          (entry) => entry.key > 0 && entry.value.isFinite && entry.value >= 0,
+        )
         .toList(growable: false);
     final start = entries.length > 500 ? entries.length - 500 : 0;
     return LibraryState(
       favorites: favorites,
       history: history,
-      resume: <int, double>{for (final entry in entries.skip(start)) entry.key: entry.value},
+      resume: <int, double>{
+        for (final entry in entries.skip(start)) entry.key: entry.value,
+      },
     );
   }
 

@@ -91,14 +91,19 @@ class PlaybackController extends ChangeNotifier {
   }
 
   Future<void> seek(Duration value) async {
-    final maximum = _duration > Duration.zero ? _duration : const Duration(days: 365);
-    final milliseconds = value.inMilliseconds.clamp(0, maximum.inMilliseconds).toInt();
+    final maximum = _duration > Duration.zero
+        ? _duration
+        : const Duration(days: 365);
+    final milliseconds = value.inMilliseconds
+        .clamp(0, maximum.inMilliseconds)
+        .toInt();
     _position = Duration(milliseconds: milliseconds);
     await _port.seek(_position);
     notifyListeners();
   }
 
-  Future<void> jump(int seconds) => seek(_position + Duration(seconds: seconds));
+  Future<void> jump(int seconds) =>
+      seek(_position + Duration(seconds: seconds));
 
   Future<void> setVolume(double value) async {
     _volume = clampFinite(value, 0, 1);
@@ -113,7 +118,10 @@ class PlaybackController extends ChangeNotifier {
   }
 
   void enqueue(AudioTrack track) {
-    if (_current?.id == track.id || _queue.any((candidate) => candidate.id == track.id)) return;
+    if (_current?.id == track.id ||
+        _queue.any((candidate) => candidate.id == track.id)) {
+      return;
+    }
     _queue.add(track);
     notifyListeners();
   }

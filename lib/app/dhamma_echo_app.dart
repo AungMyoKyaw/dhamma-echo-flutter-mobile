@@ -60,10 +60,32 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surface,
-      appBarTheme: const AppBarTheme(centerTitle: false, backgroundColor: Color(0xFFFCF9F2), surfaceTintColor: Colors.transparent),
-      cardTheme: const CardThemeData(color: Colors.white, elevation: 0, margin: EdgeInsets.zero, shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(18)), side: BorderSide(color: Color(0xFFD5D1C8)))),
-      inputDecorationTheme: const InputDecorationTheme(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16)))),
-      navigationBarTheme: const NavigationBarThemeData(height: 72, backgroundColor: Colors.white, indicatorColor: Color(0xFFF0EEE7)),
+      appBarTheme: const AppBarTheme(
+        centerTitle: false,
+        backgroundColor: Color(0xFFFCF9F2),
+        surfaceTintColor: Colors.transparent,
+      ),
+      cardTheme: const CardThemeData(
+        color: Colors.white,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(18)),
+          side: BorderSide(color: Color(0xFFD5D1C8)),
+        ),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
+      navigationBarTheme: const NavigationBarThemeData(
+        height: 72,
+        backgroundColor: Colors.white,
+        indicatorColor: Color(0xFFF0EEE7),
+      ),
     );
   }
 }
@@ -105,11 +127,21 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
     return AnimatedBuilder(
       animation: controller,
       builder: (context, _) {
-        if (controller.initializing) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        if (controller.initializing) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
         if (controller.initializationError.isNotEmpty) {
           return Scaffold(
             appBar: AppBar(title: const Text('Dhamma Echo')),
-            body: AsyncMessage(icon: Icons.error_outline, title: 'Could not open Dhamma Echo', message: controller.initializationError, actionLabel: 'Retry', onAction: controller.initialize),
+            body: AsyncMessage(
+              icon: Icons.error_outline,
+              title: 'Could not open Dhamma Echo',
+              message: controller.initializationError,
+              actionLabel: 'Retry',
+              onAction: controller.initialize,
+            ),
           );
         }
         final screens = <Widget>[
@@ -123,12 +155,20 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
           appBar: AppBar(
             title: const Row(
               mainAxisSize: MainAxisSize.min,
-              children: <Widget>[Icon(Icons.spa_outlined), SizedBox(width: 10), Text('Dhamma Echo')],
+              children: <Widget>[
+                Icon(Icons.spa_outlined),
+                SizedBox(width: 10),
+                Text('Dhamma Echo'),
+              ],
             ),
             actions: <Widget>[
               IconButton(
                 tooltip: 'Settings',
-                onPressed: () => Navigator.of(context).push<void>(MaterialPageRoute<void>(builder: (_) => SettingsScreen(controller: controller))),
+                onPressed: () => Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (_) => SettingsScreen(controller: controller),
+                  ),
+                ),
                 icon: const Icon(Icons.settings_outlined),
               ),
               const SizedBox(width: 4),
@@ -143,11 +183,30 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
                 selectedIndex: controller.selectedTab,
                 onDestinationSelected: controller.selectTab,
                 destinations: const <NavigationDestination>[
-                  NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-                  NavigationDestination(icon: Icon(Icons.search), label: 'Explore'),
-                  NavigationDestination(icon: Icon(Icons.library_music_outlined), selectedIcon: Icon(Icons.library_music), label: 'Collections'),
-                  NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Teachers'),
-                  NavigationDestination(icon: Icon(Icons.favorite_border), selectedIcon: Icon(Icons.favorite), label: 'Library'),
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: 'Home',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.search),
+                    label: 'Explore',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.library_music_outlined),
+                    selectedIcon: Icon(Icons.library_music),
+                    label: 'Collections',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.people_outline),
+                    selectedIcon: Icon(Icons.people),
+                    label: 'Teachers',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.favorite_border),
+                    selectedIcon: Icon(Icons.favorite),
+                    label: 'Library',
+                  ),
                 ],
               ),
             ],

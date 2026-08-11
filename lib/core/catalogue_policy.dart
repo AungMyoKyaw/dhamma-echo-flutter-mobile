@@ -4,7 +4,9 @@ import 'package:dhamma_echo/domain/models.dart';
 const List<int> curatedFeaturedTeacherIds = <int>[16, 42, 40, 53, 61, 8];
 
 int validatePositiveId(int id) {
-  if (id <= 0) throw ArgumentError.value(id, 'id', 'must be a positive integer');
+  if (id <= 0) {
+    throw ArgumentError.value(id, 'id', 'must be a positive integer');
+  }
   return id;
 }
 
@@ -18,7 +20,11 @@ int validateLimit(int limit) {
 String? validateLanguage(String? language) {
   if (language == null) return null;
   if (language != 'myanmar' && language != 'english') {
-    throw ArgumentError.value(language, 'language', 'unsupported language filter');
+    throw ArgumentError.value(
+      language,
+      'language',
+      'unsupported language filter',
+    );
   }
   return language;
 }
@@ -32,7 +38,9 @@ String? validateFormat(String? format) {
 }
 
 List<TeacherSummary> featuredTeachers(List<TeacherSummary> teachers) {
-  final byId = <int, TeacherSummary>{for (final teacher in teachers) teacher.id: teacher};
+  final byId = <int, TeacherSummary>{
+    for (final teacher in teachers) teacher.id: teacher,
+  };
   final featured = <TeacherSummary>[];
   for (final id in curatedFeaturedTeacherIds) {
     final teacher = byId[id];
@@ -76,9 +84,21 @@ List<CollectionGroup> groupCollectionsByTeacher(List<CollectionSummary> items) {
     final key = item.teacherId?.toString() ?? 'unknown';
     if (groups.isNotEmpty && groups.last.key == key) {
       final latest = groups.removeLast();
-      groups.add(CollectionGroup(key: latest.key, name: latest.name, items: <CollectionSummary>[...latest.items, item]));
+      groups.add(
+        CollectionGroup(
+          key: latest.key,
+          name: latest.name,
+          items: <CollectionSummary>[...latest.items, item],
+        ),
+      );
     } else {
-      groups.add(CollectionGroup(key: key, name: item.teacherName.isEmpty ? 'Unknown teacher' : item.teacherName, items: <CollectionSummary>[item]));
+      groups.add(
+        CollectionGroup(
+          key: key,
+          name: item.teacherName.isEmpty ? 'Unknown teacher' : item.teacherName,
+          items: <CollectionSummary>[item],
+        ),
+      );
     }
   }
   return groups;
@@ -87,7 +107,9 @@ List<CollectionGroup> groupCollectionsByTeacher(List<CollectionSummary> items) {
 int _naturalCompare(String left, String right) {
   final leftParts = _parts(left);
   final rightParts = _parts(right);
-  final length = leftParts.length < rightParts.length ? leftParts.length : rightParts.length;
+  final length = leftParts.length < rightParts.length
+      ? leftParts.length
+      : rightParts.length;
   for (var index = 0; index < length; index += 1) {
     final a = leftParts[index];
     final b = rightParts[index];
@@ -106,5 +128,8 @@ int _naturalCompare(String left, String right) {
 
 List<String> _parts(String value) {
   final normalized = normalizeText(value).replaceAll(' ', '').toLowerCase();
-  return RegExp(r'\d+|\D+').allMatches(normalized).map((match) => match.group(0)!).toList(growable: false);
+  return RegExp(r'\d+|\D+')
+      .allMatches(normalized)
+      .map((match) => match.group(0)!)
+      .toList(growable: false);
 }

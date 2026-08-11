@@ -8,28 +8,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('root navigation exposes five mobile destinations and settings', (tester) async {
+  testWidgets('root navigation exposes five mobile destinations and settings', (
+    tester,
+  ) async {
     final controller = AppController(
       catalogue: FakeCatalogue(),
       playback: PlaybackController(FakePlaybackPort()),
     );
-    await controller.initialize(persistedState: const PersistedState.defaults());
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
     await tester.pumpWidget(DhammaEchoApp(controller: controller));
     await tester.pumpAndSettle();
-    expect(find.text('Home'), findsOneWidget);
+    final navigation = find.byType(NavigationBar);
+    expect(
+      find.descendant(of: navigation, matching: find.text('Home')),
+      findsOneWidget,
+    );
     expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
-    expect(find.text('Explore'), findsOneWidget);
-    expect(find.text('Collections'), findsOneWidget);
-    expect(find.text('Teachers'), findsOneWidget);
-    expect(find.text('Library'), findsOneWidget);
+    expect(
+      find.descendant(of: navigation, matching: find.text('Explore')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: navigation, matching: find.text('Collections')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: navigation, matching: find.text('Teachers')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: navigation, matching: find.text('Library')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('selecting a talk shows the persistent mini player', (tester) async {
+  testWidgets('selecting a talk shows the persistent mini player', (
+    tester,
+  ) async {
     final controller = AppController(
       catalogue: FakeCatalogue(),
       playback: PlaybackController(FakePlaybackPort()),
     );
-    await controller.initialize(persistedState: const PersistedState.defaults());
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
     await tester.pumpWidget(DhammaEchoApp(controller: controller));
     await controller.play(FakeCatalogue.track);
     await tester.pump();
@@ -61,26 +85,44 @@ class FakeCatalogue implements CatalogueRepository {
   }
 
   @override
-  Future<List<AudioCategory>> listAudioCategories() async => const <AudioCategory>[];
+  Future<List<AudioCategory>> listAudioCategories() async =>
+      const <AudioCategory>[];
 
   @override
   Future<List<TeacherSummary>> listFeaturedTeachers({int limit = 100}) async {
-    return const [TeacherSummary(id: 16, name: 'Fixture Teacher', audioCount: 1)];
+    return const [
+      TeacherSummary(id: 16, name: 'Fixture Teacher', audioCount: 1),
+    ];
   }
 
   @override
-  Future<List<TeacherSummary>> searchTeachers(String query, {int limit = 100}) async {
+  Future<List<TeacherSummary>> searchTeachers(
+    String query, {
+    int limit = 100,
+  }) async {
     return listFeaturedTeachers(limit: limit);
   }
 
   @override
   Future<TeacherDetail> getTeacher(int id) async {
-    return const TeacherDetail(id: 16, name: 'Fixture Teacher', audioCount: 1, collections: []);
+    return const TeacherDetail(
+      id: 16,
+      name: 'Fixture Teacher',
+      audioCount: 1,
+      collections: [],
+    );
   }
 
   @override
-  Future<CollectionSearchPage> searchCollections(CollectionSearchRequest request) async {
-    return const CollectionSearchPage(items: [], total: 0, limit: 24, offset: 0);
+  Future<CollectionSearchPage> searchCollections(
+    CollectionSearchRequest request,
+  ) async {
+    return const CollectionSearchPage(
+      items: [],
+      total: 0,
+      limit: 24,
+      offset: 0,
+    );
   }
 
   @override
@@ -96,7 +138,12 @@ class FakeCatalogue implements CatalogueRepository {
 
   @override
   Future<AudioSearchPage> searchAudio(AudioSearchRequest request) async {
-    return const AudioSearchPage(items: [track], total: 1, limit: 50, offset: 0);
+    return const AudioSearchPage(
+      items: [track],
+      total: 1,
+      limit: 50,
+      offset: 0,
+    );
   }
 
   @override
@@ -105,7 +152,8 @@ class FakeCatalogue implements CatalogueRepository {
 
 class FakePlaybackPort implements PlaybackPort {
   @override
-  Stream<PlaybackPortEvent> get events => const Stream<PlaybackPortEvent>.empty();
+  Stream<PlaybackPortEvent> get events =>
+      const Stream<PlaybackPortEvent>.empty();
 
   @override
   Future<void> dispose() async {}
