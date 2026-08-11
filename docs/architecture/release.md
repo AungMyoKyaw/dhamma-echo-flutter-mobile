@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart LR
-    S[Source] --> F[Flutter 3.44.7 setup]
+    S[Source] --> F[Flutter 3.44.9 setup]
     F --> P[Generate Android + iOS platform folders]
     P --> C[Extract current catalogue from desktop release]
     C --> V[Verify 27,750,400 bytes + SHA-256]

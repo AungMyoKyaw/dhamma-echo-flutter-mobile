@@ -19,7 +19,7 @@ This is a native Flutter port of the current Dhamma Echo desktop product. The su
 
 ## Technology
 
-- Flutter 3.44.7 baseline / Dart 3.12+
+- Flutter 3.44.9 baseline / Dart 3.12+
 - Material 3
 - `sqflite 2.4.3`
 - `just_audio 0.10.6`
@@ -48,7 +48,7 @@ tool/                   reproducible catalogue/platform/quality tooling
 
 ## Requirements
 
-- Flutter 3.44.7 stable with Dart 3.12+
+- Flutter 3.44.9 stable with Dart 3.12+
 - Android SDK for Android builds
 - Xcode on macOS for iOS builds
 - Python 3.13+ for repository/release tooling
@@ -164,7 +164,7 @@ See [SECURITY.md](SECURITY.md) and the [system context diagram](docs/architectur
 
 **Network MP3 does not play** — the player intentionally rejects any host outside the two approved Dhamma Download hostnames and rejects WMA.
 
-**Android/iOS folders are absent** — run `make bootstrap` with Flutter 3.44.7 installed.
+**Android/iOS folders are absent** — run `make bootstrap` with Flutter 3.44.9 installed.
 
 ## Contributing
 

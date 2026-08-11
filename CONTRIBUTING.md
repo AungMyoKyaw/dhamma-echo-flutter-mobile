@@ -2,7 +2,7 @@
 
 ## Setup
 
-1. Install Flutter 3.44.7 and Python 3.13+.
+1. Install Flutter 3.44.9 and Python 3.13+.
 2. Install `requirements-tooling.txt`.
 3. Run `make bootstrap` and `make deps`.
 4. Use the development fixture for isolated UI work or run `make catalogue` when validating the production catalogue.
