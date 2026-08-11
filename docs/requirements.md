@@ -57,10 +57,10 @@ Settings opens from the app bar. A persistent mini-player sits above bottom navi
 ## Visual direction
 
 - Light-only Material 3.
-- Warm paper background with brown primary, olive secondary, and restrained borders.
+- Neutral off-white surfaces with a restrained forest-green primary, clear Material 3 role contrast, and subtle borders.
 - System fonts, including platform Myanmar font support; no font files are bundled.
 - Avoid desktop sidebar layouts and generic dashboard cards.
-- Favor large touch targets, clear hierarchy, explicit loading/empty/error states, and safe-area-aware mobile composition.
+- Favor large touch targets, clear hierarchy, low-shadow search/input surfaces, explicit loading/empty/error states, and safe-area-aware mobile composition.
 
 ## Explicit exclusions
 
