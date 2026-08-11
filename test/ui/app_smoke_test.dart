@@ -115,7 +115,7 @@ class FakeCatalogue implements CatalogueRepository {
       const <AudioCategory>[];
 
   @override
-  Future<List<TeacherSummary>> listFeaturedTeachers({int limit = 100}) async {
+  Future<List<TeacherSummary>> listTeachers() async {
     return const [
       TeacherSummary(id: 16, name: 'Fixture Teacher', audioCount: 1),
     ];
@@ -126,7 +126,7 @@ class FakeCatalogue implements CatalogueRepository {
     String query, {
     int limit = 100,
   }) async {
-    return listFeaturedTeachers(limit: limit);
+    return listTeachers();
   }
 
   @override

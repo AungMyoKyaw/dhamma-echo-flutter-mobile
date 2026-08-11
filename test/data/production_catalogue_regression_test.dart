@@ -22,6 +22,7 @@ void main() {
     final repository = SqfliteCatalogueRepository(database);
 
     final summary = await repository.getSummary();
+    final teachers = await repository.listTeachers();
     final collections = await repository.searchCollections(
       const CollectionSearchRequest(limit: 24),
     );
@@ -30,6 +31,7 @@ void main() {
     expect(summary.totalTeachers, 257);
     expect(summary.myanmarAudio, 30098);
     expect(summary.englishAudio, 465);
+    expect(teachers, hasLength(257));
     expect(collections.total, 429);
   });
 }
