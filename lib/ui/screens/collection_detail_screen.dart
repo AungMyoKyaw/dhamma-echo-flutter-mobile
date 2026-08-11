@@ -5,7 +5,11 @@ import 'package:dhamma_echo/ui/components/track_tile.dart';
 import 'package:flutter/material.dart';
 
 class CollectionDetailScreen extends StatelessWidget {
-  const CollectionDetailScreen({required this.controller, required this.collection, super.key});
+  const CollectionDetailScreen({
+    required this.controller,
+    required this.collection,
+    super.key,
+  });
 
   final AppController controller;
   final CollectionSummary collection;
@@ -35,10 +39,15 @@ class CollectionDetailScreen extends StatelessWidget {
               children: <Widget>[
                 Text(
                   detail.name,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text(detail.teacherName, style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  detail.teacherName,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 if (detail.description case final description?) ...<Widget>[
                   const SizedBox(height: 10),
                   Text(description),
@@ -52,7 +61,9 @@ class CollectionDetailScreen extends StatelessWidget {
                       onPressed: () async {
                         await controller.filterByCollection(detail.id);
                         if (context.mounted) {
-                          Navigator.of(context).popUntil((route) => route.isFirst);
+                          Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst);
                         }
                       },
                       icon: const Icon(Icons.filter_alt_outlined),
@@ -65,7 +76,10 @@ class CollectionDetailScreen extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: detail.tracks
-                        .map((track) => TrackTile(controller: controller, track: track))
+                        .map(
+                          (track) =>
+                              TrackTile(controller: controller, track: track),
+                        )
                         .toList(growable: false),
                   ),
                 ),

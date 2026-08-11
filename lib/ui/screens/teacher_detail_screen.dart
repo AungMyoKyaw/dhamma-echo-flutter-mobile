@@ -9,7 +9,11 @@ import 'package:dhamma_echo/ui/screens/collection_detail_screen.dart';
 import 'package:flutter/material.dart';
 
 class TeacherDetailScreen extends StatefulWidget {
-  const TeacherDetailScreen({required this.controller, required this.teacher, super.key});
+  const TeacherDetailScreen({
+    required this.controller,
+    required this.teacher,
+    super.key,
+  });
 
   final AppController controller;
   final TeacherSummary teacher;
@@ -90,7 +94,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
               children: <Widget>[
                 Text(
                   detail.name,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 if (detail.nameMyanmar case final myanmar?) ...<Widget>[
                   const SizedBox(height: 6),
@@ -113,7 +119,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                       onPressed: () async {
                         await widget.controller.filterByTeacher(detail.id);
                         if (context.mounted) {
-                          Navigator.of(context).popUntil((route) => route.isFirst);
+                          Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst);
                         }
                       },
                       icon: const Icon(Icons.filter_alt_outlined),
@@ -125,7 +133,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'Collections',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   for (final collection in detail.collections)
@@ -147,7 +157,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                 const SizedBox(height: 24),
                 Text(
                   'Talks',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 4),
                 Text('Showing ${_talks.length} of $_total talks'),
@@ -170,7 +182,12 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: Column(
                       children: _talks
-                          .map((track) => TrackTile(controller: widget.controller, track: track))
+                          .map(
+                            (track) => TrackTile(
+                              controller: widget.controller,
+                              track: track,
+                            ),
+                          )
                           .toList(growable: false),
                     ),
                   ),
@@ -187,7 +204,9 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                 if (_talks.length < _total) ...<Widget>[
                   const SizedBox(height: 12),
                   FilledButton.tonal(
-                    onPressed: _loadingMore ? null : () => _loadTalks(append: true),
+                    onPressed: _loadingMore
+                        ? null
+                        : () => _loadTalks(append: true),
                     child: Text(_loadingMore ? 'Loading…' : 'Load more talks'),
                   ),
                 ],

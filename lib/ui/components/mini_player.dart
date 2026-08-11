@@ -17,7 +17,9 @@ class MiniPlayer extends StatelessWidget {
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
       child: InkWell(
         onTap: () => Navigator.of(context).push<void>(
-          MaterialPageRoute<void>(builder: (_) => PlayerScreen(controller: controller)),
+          MaterialPageRoute<void>(
+            builder: (_) => PlayerScreen(controller: controller),
+          ),
         ),
         child: SafeArea(
           top: false,
@@ -37,21 +39,41 @@ class MiniPlayer extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
-                      Text(track.teacherName, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(
+                        track.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        track.teacherName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
                 IconButton(
                   tooltip: controller.playback.playing ? 'Pause' : 'Play',
-                  onPressed: controller.playback.loading ? null : controller.playback.toggle,
+                  onPressed: controller.playback.loading
+                      ? null
+                      : controller.playback.toggle,
                   icon: controller.playback.loading
-                      ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Icon(controller.playback.playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                      ? const SizedBox.square(
+                          dimension: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Icon(
+                          controller.playback.playing
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                        ),
                 ),
                 IconButton(
                   tooltip: 'Play next',
-                  onPressed: controller.playback.queue.isEmpty ? null : controller.playNext,
+                  onPressed: controller.playback.queue.isEmpty
+                      ? null
+                      : controller.playNext,
                   icon: const Icon(Icons.skip_next_rounded),
                 ),
               ],

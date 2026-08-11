@@ -17,9 +17,18 @@ void main() {
 
   test('unsafe sources and unsupported formats are rejected', () {
     expect(mediaUrlCandidates('https://example.com/a.mp3', 'mp3'), isEmpty);
-    expect(mediaUrlCandidates('https://dhammadownload.com/a.wma', 'wma'), isEmpty);
-    expect(mediaUrlCandidates('https://user:pass@dhammadownload.com/a.mp3', 'mp3'), isEmpty);
-    expect(mediaUrlCandidates('https://dhammadownload.com:8443/a.mp3', 'mp3'), isEmpty);
+    expect(
+      mediaUrlCandidates('https://dhammadownload.com/a.wma', 'wma'),
+      isEmpty,
+    );
+    expect(
+      mediaUrlCandidates('https://user:pass@dhammadownload.com/a.mp3', 'mp3'),
+      isEmpty,
+    );
+    expect(
+      mediaUrlCandidates('https://dhammadownload.com:8443/a.mp3', 'mp3'),
+      isEmpty,
+    );
     expect(mediaUrlCandidates('not a url', 'mp3'), isEmpty);
   });
 }

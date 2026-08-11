@@ -40,35 +40,44 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
       HAVING COUNT(m.id) > 0
       ORDER BY c.id
     ''');
-    return rows.map((row) {
-      return AudioCategory(
-        id: _integer(row['id']),
-        name: _normalizedOr(row['name'], 'Uncategorized audio'),
-        language: normalizeText(_string(row['language'])).toLowerCase(),
-        audioCount: _integer(row['audio_count']),
-      );
-    }).toList(growable: false);
+    return rows
+        .map((row) {
+          return AudioCategory(
+            id: _integer(row['id']),
+            name: _normalizedOr(row['name'], 'Uncategorized audio'),
+            language: normalizeText(_string(row['language'])).toLowerCase(),
+            audioCount: _integer(row['audio_count']),
+          );
+        })
+        .toList(growable: false);
   }
 
   @override
   Future<List<TeacherSummary>> listFeaturedTeachers({int limit = 100}) async {
     validateLimit(limit);
-    final rows = await _database.rawQuery('''
+    final rows = await _database.rawQuery(
+      '''
       SELECT t.id, t.name, COUNT(m.id) AS audio_count
       FROM teachers t
       JOIN media m ON m.teacher_id = t.id AND m.type = 'audio'
       GROUP BY t.id, t.name
       ORDER BY audio_count DESC, LOWER(t.name), t.id
       LIMIT ?
-    ''', <Object?>[limit]);
+    ''',
+      <Object?>[limit],
+    );
     return rows.map(_teacherSummary).toList(growable: false);
   }
 
   @override
-  Future<List<TeacherSummary>> searchTeachers(String query, {int limit = 100}) async {
+  Future<List<TeacherSummary>> searchTeachers(
+    String query, {
+    int limit = 100,
+  }) async {
     validateLimit(limit);
     final pattern = '%${normalizeText(query).toLowerCase()}%';
-    final rows = await _database.rawQuery('''
+    final rows = await _database.rawQuery(
+      '''
       SELECT t.id, t.name, COUNT(m.id) AS audio_count
       FROM teachers t
       LEFT JOIN media m ON m.teacher_id = t.id AND m.type = 'audio'
@@ -76,23 +85,29 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
       GROUP BY t.id, t.name
       ORDER BY audio_count DESC, LOWER(t.name), t.id
       LIMIT ?
-    ''', <Object?>[pattern, pattern, limit]);
+    ''',
+      <Object?>[pattern, pattern, limit],
+    );
     return rows.map(_teacherSummary).toList(growable: false);
   }
 
   @override
   Future<TeacherDetail> getTeacher(int id) async {
     validatePositiveId(id);
-    final rows = await _database.rawQuery('''
+    final rows = await _database.rawQuery(
+      '''
       SELECT t.id, t.name, t.name_myanmar, t.title, t.description, COUNT(m.id) AS audio_count
       FROM teachers t
       LEFT JOIN media m ON m.teacher_id = t.id AND m.type = 'audio'
       WHERE t.id = ?
       GROUP BY t.id
-    ''', <Object?>[id]);
+    ''',
+      <Object?>[id],
+    );
     if (rows.isEmpty) throw CatalogueNotFoundException('Teacher', id);
     final row = rows.single;
-    final collectionRows = await _database.rawQuery('''
+    final collectionRows = await _database.rawQuery(
+      '''
       SELECT c.id, c.name, c.teacher_id, t.name AS teacher_name, COUNT(DISTINCT m.id) AS audio_count
       FROM collections c
       JOIN media_collections mc ON mc.collection_id = c.id
@@ -100,7 +115,9 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
       LEFT JOIN teachers t ON t.id = c.teacher_id
       WHERE c.teacher_id = ?
       GROUP BY c.id, c.name, c.teacher_id, t.name
-    ''', <Object?>[id]);
+    ''',
+      <Object?>[id],
+    );
     final collections = collectionRows.map(_collectionSummary).toList();
     sortTeacherCollections(collections);
     return TeacherDetail(
@@ -115,13 +132,16 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
   }
 
   @override
-  Future<CollectionSearchPage> searchCollections(CollectionSearchRequest request) async {
+  Future<CollectionSearchPage> searchCollections(
+    CollectionSearchRequest request,
+  ) async {
     final limit = validateLimit(request.limit);
     final offset = request.offset < 0 ? 0 : request.offset;
     final teacherId = request.teacherId;
     if (teacherId != null) validatePositiveId(teacherId);
     final pattern = '%${normalizeText(request.query).toLowerCase()}%';
-    final rows = await _database.rawQuery('''
+    final rows = await _database.rawQuery(
+      '''
       SELECT c.id, c.name, c.teacher_id, t.name AS teacher_name, COUNT(DISTINCT m.id) AS audio_count
       FROM collections c
       JOIN media_collections mc ON mc.collection_id = c.id
@@ -129,25 +149,36 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
       LEFT JOIN teachers t ON t.id = c.teacher_id
       WHERE LOWER(c.name) LIKE ? AND (? IS NULL OR c.teacher_id = ?)
       GROUP BY c.id, c.name, c.teacher_id, t.name
-    ''', <Object?>[pattern, request.teacherId, request.teacherId]);
+    ''',
+      <Object?>[pattern, request.teacherId, request.teacherId],
+    );
     final summaries = rows.map(_collectionSummary).toList();
     sortCollectionSummaries(summaries);
     final items = summaries.skip(offset).take(limit).toList(growable: false);
-    return CollectionSearchPage(items: items, total: summaries.length, limit: limit, offset: offset);
+    return CollectionSearchPage(
+      items: items,
+      total: summaries.length,
+      limit: limit,
+      offset: offset,
+    );
   }
 
   @override
   Future<CollectionDetail> getCollection(int id) async {
     validatePositiveId(id);
-    final rows = await _database.rawQuery('''
+    final rows = await _database.rawQuery(
+      '''
       SELECT c.name, c.description, c.teacher_id, t.name AS teacher_name
       FROM collections c
       LEFT JOIN teachers t ON t.id = c.teacher_id
       WHERE c.id = ?
-    ''', <Object?>[id]);
+    ''',
+      <Object?>[id],
+    );
     if (rows.isEmpty) throw CatalogueNotFoundException('Collection', id);
     final row = rows.single;
-    final trackRows = await _database.rawQuery('''
+    final trackRows = await _database.rawQuery(
+      '''
       SELECT m.id, m.title, COALESCE(m.format, '') AS format, m.language, m.url,
              m.date_recorded, m.location, m.teacher_id, t.name AS teacher_name
       FROM media_collections mc
@@ -155,7 +186,9 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
       LEFT JOIN teachers t ON t.id = m.teacher_id
       WHERE mc.collection_id = ?
       ORDER BY mc.track_number IS NULL, mc.track_number, m.id
-    ''', <Object?>[id]);
+    ''',
+      <Object?>[id],
+    );
     final tracks = trackRows.map(_audioTrack).toList(growable: false);
     return CollectionDetail(
       id: id,
@@ -171,13 +204,16 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
   @override
   Future<AudioTrack> getAudioTrack(int id) async {
     validatePositiveId(id);
-    final rows = await _database.rawQuery('''
+    final rows = await _database.rawQuery(
+      '''
       SELECT m.id, m.title, COALESCE(m.format, '') AS format, m.language, m.url,
              m.date_recorded, m.location, m.teacher_id, t.name AS teacher_name
       FROM media m
       LEFT JOIN teachers t ON t.id = m.teacher_id
       WHERE m.id = ? AND m.type = 'audio'
-    ''', <Object?>[id]);
+    ''',
+      <Object?>[id],
+    );
     if (rows.isEmpty) throw CatalogueNotFoundException('Audio track', id);
     return _audioTrack(rows.single);
   }
@@ -200,7 +236,9 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
     final query = normalizeText(request.query).toLowerCase();
     if (query.isNotEmpty) {
       final pattern = '%$query%';
-      clauses.add("(LOWER(COALESCE(m.title, '')) LIKE ? OR LOWER(COALESCE(t.name, '')) LIKE ?)");
+      clauses.add(
+        "(LOWER(COALESCE(m.title, '')) LIKE ? OR LOWER(COALESCE(t.name, '')) LIKE ?)",
+      );
       values.addAll(<Object?>[pattern, pattern]);
     }
     final language = request.language;
@@ -222,7 +260,9 @@ class SqfliteCatalogueRepository implements CatalogueRepository {
       values.add(categoryId);
     }
     if (collectionId != null) {
-      clauses.add('EXISTS (SELECT 1 FROM media_collections filter_mc WHERE filter_mc.media_id = m.id AND filter_mc.collection_id = ?)');
+      clauses.add(
+        'EXISTS (SELECT 1 FROM media_collections filter_mc WHERE filter_mc.media_id = m.id AND filter_mc.collection_id = ?)',
+      );
       values.add(collectionId);
     }
     final whereClause = clauses.join(' AND ');
@@ -293,4 +333,6 @@ String? _optionalNormalized(Object? value) {
   final normalized = normalizeText(value.toString());
   return normalized.isEmpty ? null : normalized;
 }
-String _normalizedOr(Object? value, String fallback) => _optionalNormalized(value) ?? fallback;
+
+String _normalizedOr(Object? value, String fallback) =>
+    _optionalNormalized(value) ?? fallback;

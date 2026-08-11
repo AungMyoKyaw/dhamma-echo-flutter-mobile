@@ -6,7 +6,9 @@ abstract interface class CatalogueRepository {
   Future<List<TeacherSummary>> listFeaturedTeachers({int limit = 100});
   Future<List<TeacherSummary>> searchTeachers(String query, {int limit = 100});
   Future<TeacherDetail> getTeacher(int id);
-  Future<CollectionSearchPage> searchCollections(CollectionSearchRequest request);
+  Future<CollectionSearchPage> searchCollections(
+    CollectionSearchRequest request,
+  );
   Future<CollectionDetail> getCollection(int id);
   Future<AudioSearchPage> searchAudio(AudioSearchRequest request);
   Future<AudioTrack> getAudioTrack(int id);

@@ -43,13 +43,15 @@ abstract interface class PlaybackPort {
 }
 
 class JustAudioPlaybackPort implements PlaybackPort {
-  JustAudioPlaybackPort({AudioPlayer? player}) : _player = player ?? AudioPlayer() {
+  JustAudioPlaybackPort({AudioPlayer? player})
+    : _player = player ?? AudioPlayer() {
     _subscriptions.add(
       _player.playerStateStream.listen((state) {
         _events.add(
           PlaybackStateEvent(
             playing: state.playing,
-            loading: state.processingState == ProcessingState.loading ||
+            loading:
+                state.processingState == ProcessingState.loading ||
                 state.processingState == ProcessingState.buffering,
           ),
         );
@@ -58,18 +60,30 @@ class JustAudioPlaybackPort implements PlaybackPort {
         }
       }),
     );
-    _subscriptions.add(_player.positionStream.listen((position) => _events.add(PlaybackPositionEvent(position))));
+    _subscriptions.add(
+      _player.positionStream.listen(
+        (position) => _events.add(PlaybackPositionEvent(position)),
+      ),
+    );
     _subscriptions.add(
       _player.durationStream.listen((duration) {
         if (duration != null) _events.add(PlaybackDurationEvent(duration));
       }),
     );
-    _subscriptions.add(_player.errorStream.listen((error) => _events.add(PlaybackErrorEvent(error.message ?? 'Audio playback failed.'))));
+    _subscriptions.add(
+      _player.errorStream.listen(
+        (error) => _events.add(
+          PlaybackErrorEvent(error.message ?? 'Audio playback failed.'),
+        ),
+      ),
+    );
   }
 
   final AudioPlayer _player;
-  final StreamController<PlaybackPortEvent> _events = StreamController<PlaybackPortEvent>.broadcast();
-  final List<StreamSubscription<Object?>> _subscriptions = <StreamSubscription<Object?>>[];
+  final StreamController<PlaybackPortEvent> _events =
+      StreamController<PlaybackPortEvent>.broadcast();
+  final List<StreamSubscription<Object?>> _subscriptions =
+      <StreamSubscription<Object?>>[];
 
   @override
   Stream<PlaybackPortEvent> get events => _events.stream;

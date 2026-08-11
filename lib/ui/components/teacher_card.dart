@@ -22,14 +22,20 @@ class TeacherCard extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                child: Icon(Icons.self_improvement, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                child: Icon(
+                  Icons.self_improvement,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(teacher.name, style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      teacher.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     const SizedBox(height: 4),
                     Text('${teacher.audioCount} talks'),
                     if (featured) ...<Widget>[
@@ -61,7 +67,13 @@ class _FeaturedBadge extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-        child: Text('FEATURED', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colors.primary, fontWeight: FontWeight.w700)),
+        child: Text(
+          'FEATURED',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: colors.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }

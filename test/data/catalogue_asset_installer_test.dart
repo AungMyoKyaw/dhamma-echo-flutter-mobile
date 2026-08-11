@@ -9,17 +9,22 @@ void main() {
 
   test('catalogue validation rejects data without a SQLite header', () {
     expect(
-      () => installer.validateReleaseAsset(Uint8List.fromList(const <int>[1, 2, 3, 4])),
+      () => installer.validateReleaseAsset(
+        Uint8List.fromList(const <int>[1, 2, 3, 4]),
+      ),
       throwsStateError,
     );
   });
 
-  test('debug catalogue validation accepts a structurally valid SQLite fixture', () {
-    final bytes = Uint8List.fromList(<int>[
-      ...ascii.encode('SQLite format 3\u0000'),
-      ...List<int>.filled(64, 0),
-    ]);
+  test(
+    'debug catalogue validation accepts a structurally valid SQLite fixture',
+    () {
+      final bytes = Uint8List.fromList(<int>[
+        ...ascii.encode('SQLite format 3\u0000'),
+        ...List<int>.filled(64, 0),
+      ]);
 
-    expect(() => installer.validateReleaseAsset(bytes), returnsNormally);
-  });
+      expect(() => installer.validateReleaseAsset(bytes), returnsNormally);
+    },
+  );
 }

@@ -17,7 +17,11 @@ class CatalogueSummary {
 
 @immutable
 class TeacherSummary {
-  const TeacherSummary({required this.id, required this.name, required this.audioCount});
+  const TeacherSummary({
+    required this.id,
+    required this.name,
+    required this.audioCount,
+  });
 
   final int id;
   final String name;
@@ -244,7 +248,9 @@ class HistoryEntry {
 
   @override
   bool operator ==(Object other) {
-    return other is HistoryEntry && other.id == id && other.playedAt == playedAt;
+    return other is HistoryEntry &&
+        other.id == id &&
+        other.playedAt == playedAt;
   }
 
   @override
@@ -253,8 +259,15 @@ class HistoryEntry {
 
 @immutable
 class LibraryState {
-  const LibraryState({required this.favorites, required this.history, required this.resume});
-  const LibraryState.defaults() : favorites = const [], history = const [], resume = const {};
+  const LibraryState({
+    required this.favorites,
+    required this.history,
+    required this.resume,
+  });
+  const LibraryState.defaults()
+    : favorites = const [],
+      history = const [],
+      resume = const {};
 
   final List<int> favorites;
   final List<HistoryEntry> history;
@@ -269,7 +282,11 @@ class LibraryState {
   }
 
   @override
-  int get hashCode => Object.hash(Object.hashAll(favorites), Object.hashAll(history), Object.hashAll(resume.entries));
+  int get hashCode => Object.hash(
+    Object.hashAll(favorites),
+    Object.hashAll(history),
+    Object.hashAll(resume.entries),
+  );
 }
 
 @immutable
@@ -282,7 +299,9 @@ class SettingsState {
 
   @override
   bool operator ==(Object other) {
-    return other is SettingsState && other.playbackRate == playbackRate && other.volume == volume;
+    return other is SettingsState &&
+        other.playbackRate == playbackRate &&
+        other.volume == volume;
   }
 
   @override
@@ -293,15 +312,17 @@ class SettingsState {
 class PersistedState {
   const PersistedState({required this.library, required this.settings});
   const PersistedState.defaults()
-      : library = const LibraryState.defaults(),
-        settings = const SettingsState.defaults();
+    : library = const LibraryState.defaults(),
+      settings = const SettingsState.defaults();
 
   final LibraryState library;
   final SettingsState settings;
 
   @override
   bool operator ==(Object other) {
-    return other is PersistedState && other.library == library && other.settings == settings;
+    return other is PersistedState &&
+        other.library == library &&
+        other.settings == settings;
   }
 
   @override
@@ -310,7 +331,11 @@ class PersistedState {
 
 @immutable
 class CollectionGroup {
-  const CollectionGroup({required this.key, required this.name, required this.items});
+  const CollectionGroup({
+    required this.key,
+    required this.name,
+    required this.items,
+  });
 
   final String key;
   final String name;

@@ -13,19 +13,22 @@ void main() {
     expect(controller.error, contains('not supported'));
   });
 
-  test('play retries approved host candidates and applies resume settings', () async {
-    final port = FakePlaybackPort(failuresBeforeSuccess: 1);
-    final controller = PlaybackController(port);
-    await controller.setVolume(0.4);
-    await controller.setRate(1.5);
-    final result = await controller.play(fixtureTrack(), resumeAt: 42);
-    expect(result, isTrue);
-    expect(port.urls, hasLength(2));
-    expect(port.lastSeek, const Duration(seconds: 42));
-    expect(controller.position, const Duration(seconds: 42));
-    expect(port.volume, 0.4);
-    expect(port.speed, 1.5);
-  });
+  test(
+    'play retries approved host candidates and applies resume settings',
+    () async {
+      final port = FakePlaybackPort(failuresBeforeSuccess: 1);
+      final controller = PlaybackController(port);
+      await controller.setVolume(0.4);
+      await controller.setRate(1.5);
+      final result = await controller.play(fixtureTrack(), resumeAt: 42);
+      expect(result, isTrue);
+      expect(port.urls, hasLength(2));
+      expect(port.lastSeek, const Duration(seconds: 42));
+      expect(controller.position, const Duration(seconds: 42));
+      expect(port.volume, 0.4);
+      expect(port.speed, 1.5);
+    },
+  );
 
   test('queue remains unique and next advances predictably', () async {
     final port = FakePlaybackPort();
@@ -42,7 +45,11 @@ void main() {
   });
 }
 
-AudioTrack fixtureTrack({int id = 1, bool playable = true, String format = 'mp3'}) {
+AudioTrack fixtureTrack({
+  int id = 1,
+  bool playable = true,
+  String format = 'mp3',
+}) {
   return AudioTrack(
     id: id,
     title: 'Talk $id',
@@ -66,7 +73,8 @@ class FakePlaybackPort implements PlaybackPort {
   int attempts = 0;
 
   @override
-  Stream<PlaybackPortEvent> get events => const Stream<PlaybackPortEvent>.empty();
+  Stream<PlaybackPortEvent> get events =>
+      const Stream<PlaybackPortEvent>.empty();
 
   @override
   Future<void> dispose() async {}

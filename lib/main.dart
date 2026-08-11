@@ -14,7 +14,11 @@ import 'package:sqflite/sqflite.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = await const CatalogueAssetInstaller().openReadOnly();
-  final statePath = p.join(await getDatabasesPath(), 'dhamma-echo', 'state.json');
+  final statePath = p.join(
+    await getDatabasesPath(),
+    'dhamma-echo',
+    'state.json',
+  );
   final controller = AppController(
     catalogue: SqfliteCatalogueRepository(database),
     playback: PlaybackController(JustAudioPlaybackPort()),

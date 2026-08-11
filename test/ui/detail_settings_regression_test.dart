@@ -9,13 +9,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('settings reflects controller changes while the route is open', (tester) async {
+  testWidgets('settings reflects controller changes while the route is open', (
+    tester,
+  ) async {
     final controller = AppController(
       catalogue: DetailCatalogue(),
       playback: PlaybackController(DetailPlaybackPort()),
     );
-    await controller.initialize(persistedState: const PersistedState.defaults());
-    await tester.pumpWidget(MaterialApp(home: SettingsScreen(controller: controller)));
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: SettingsScreen(controller: controller)),
+    );
 
     await controller.setVolume(0.5);
     await tester.pump();
@@ -23,12 +29,16 @@ void main() {
     expect(find.text('50%'), findsOneWidget);
   });
 
-  testWidgets('collection Explore filter returns to the root Explore surface', (tester) async {
+  testWidgets('collection Explore filter returns to the root Explore surface', (
+    tester,
+  ) async {
     final controller = AppController(
       catalogue: DetailCatalogue(),
       playback: PlaybackController(DetailPlaybackPort()),
     );
-    await controller.initialize(persistedState: const PersistedState.defaults());
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
@@ -82,40 +92,75 @@ class DetailCatalogue implements CatalogueRepository {
 
   @override
   Future<CatalogueSummary> getSummary() async {
-    return const CatalogueSummary(totalAudio: 1, totalTeachers: 1, myanmarAudio: 0, englishAudio: 1);
+    return const CatalogueSummary(
+      totalAudio: 1,
+      totalTeachers: 1,
+      myanmarAudio: 0,
+      englishAudio: 1,
+    );
   }
 
   @override
-  Future<List<AudioCategory>> listAudioCategories() async => const <AudioCategory>[];
+  Future<List<AudioCategory>> listAudioCategories() async =>
+      const <AudioCategory>[];
 
   @override
   Future<List<TeacherSummary>> listFeaturedTeachers({int limit = 100}) async {
-    return const <TeacherSummary>[TeacherSummary(id: 16, name: 'Teacher', audioCount: 1)];
+    return const <TeacherSummary>[
+      TeacherSummary(id: 16, name: 'Teacher', audioCount: 1),
+    ];
   }
 
   @override
-  Future<List<TeacherSummary>> searchTeachers(String query, {int limit = 100}) async {
+  Future<List<TeacherSummary>> searchTeachers(
+    String query, {
+    int limit = 100,
+  }) async {
     return listFeaturedTeachers(limit: limit);
   }
 
   @override
   Future<TeacherDetail> getTeacher(int id) async {
-    return const TeacherDetail(id: 16, name: 'Teacher', audioCount: 1, collections: <CollectionSummary>[collection]);
+    return const TeacherDetail(
+      id: 16,
+      name: 'Teacher',
+      audioCount: 1,
+      collections: <CollectionSummary>[collection],
+    );
   }
 
   @override
-  Future<CollectionSearchPage> searchCollections(CollectionSearchRequest request) async {
-    return CollectionSearchPage(items: const <CollectionSummary>[collection], total: 1, limit: request.limit, offset: request.offset);
+  Future<CollectionSearchPage> searchCollections(
+    CollectionSearchRequest request,
+  ) async {
+    return CollectionSearchPage(
+      items: const <CollectionSummary>[collection],
+      total: 1,
+      limit: request.limit,
+      offset: request.offset,
+    );
   }
 
   @override
   Future<CollectionDetail> getCollection(int id) async {
-    return const CollectionDetail(id: 7, name: 'Collection Seven', teacherId: 16, teacherName: 'Teacher', audioCount: 1, tracks: <AudioTrack>[track]);
+    return const CollectionDetail(
+      id: 7,
+      name: 'Collection Seven',
+      teacherId: 16,
+      teacherName: 'Teacher',
+      audioCount: 1,
+      tracks: <AudioTrack>[track],
+    );
   }
 
   @override
   Future<AudioSearchPage> searchAudio(AudioSearchRequest request) async {
-    return AudioSearchPage(items: const <AudioTrack>[track], total: 1, limit: request.limit, offset: request.offset);
+    return AudioSearchPage(
+      items: const <AudioTrack>[track],
+      total: 1,
+      limit: request.limit,
+      offset: request.offset,
+    );
   }
 
   @override
@@ -124,7 +169,8 @@ class DetailCatalogue implements CatalogueRepository {
 
 class DetailPlaybackPort implements PlaybackPort {
   @override
-  Stream<PlaybackPortEvent> get events => const Stream<PlaybackPortEvent>.empty();
+  Stream<PlaybackPortEvent> get events =>
+      const Stream<PlaybackPortEvent>.empty();
 
   @override
   Future<void> dispose() async {}

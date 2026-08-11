@@ -24,11 +24,20 @@ void main() {
   });
 
   test('save validates deduplicates and bounds library state', () async {
-    final history = List<HistoryEntry>.generate(120, (index) => HistoryEntry(id: index + 1, playedAt: index.toDouble()));
-    final resume = <int, double>{for (var index = 1; index <= 520; index += 1) index: index.toDouble()};
+    final history = List<HistoryEntry>.generate(
+      120,
+      (index) => HistoryEntry(id: index + 1, playedAt: index.toDouble()),
+    );
+    final resume = <int, double>{
+      for (var index = 1; index <= 520; index += 1) index: index.toDouble(),
+    };
     await repository.save(
       PersistedState(
-        library: LibraryState(favorites: const [1, 1, -1, 2], history: history, resume: resume),
+        library: LibraryState(
+          favorites: const [1, 1, -1, 2],
+          history: history,
+          resume: resume,
+        ),
         settings: const SettingsState(playbackRate: 1.5, volume: 0.4),
       ),
     );
@@ -40,7 +49,9 @@ void main() {
   });
 
   test('invalid persisted settings use defaults', () async {
-    await file.writeAsString('{"version":1,"library":{},"settings":{"playbackRate":9,"volume":2}}');
+    await file.writeAsString(
+      '{"version":1,"library":{},"settings":{"playbackRate":9,"volume":2}}',
+    );
     expect((await repository.load()).settings, const SettingsState.defaults());
   });
 }

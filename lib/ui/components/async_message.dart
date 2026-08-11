@@ -27,9 +27,19 @@ class AsyncMessage extends StatelessWidget {
           children: <Widget>[
             Icon(icon, size: 48, color: colors.primary),
             const SizedBox(height: 16),
-            Text(title, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
-            Text(message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant), textAlign: TextAlign.center),
+            Text(
+              message,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
             if (actionLabel != null && onAction != null) ...<Widget>[
               const SizedBox(height: 20),
               FilledButton(onPressed: onAction, child: Text(actionLabel!)),

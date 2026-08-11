@@ -3,7 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('normalizeText collapses unicode whitespace', () {
-    expect(normalizeText('  Venerable\n\tSayadaw   U Jotika  '), 'Venerable Sayadaw U Jotika');
+    expect(
+      normalizeText('  Venerable\n\tSayadaw   U Jotika  '),
+      'Venerable Sayadaw U Jotika',
+    );
     expect(normalizeText('  မေတ္တာ   ပို့  '), 'မေတ္တာ ပို့');
   });
 
