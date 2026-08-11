@@ -47,8 +47,7 @@ class CatalogueAssetInstaller {
       p.join(databasesPath, 'dhamma-echo', 'dhamma-$version.db'),
     );
     await destination.parent.create(recursive: true);
-    if (kDebugMode ||
-        !await destination.exists() ||
+    if (!await destination.exists() ||
         await destination.length() != bytes.length) {
       await destination.writeAsBytes(bytes, flush: true);
     }
@@ -69,9 +68,9 @@ class CatalogueAssetInstaller {
         );
       }
     }
-    if (!kDebugMode && bytes.lengthInBytes != productionByteLength) {
+    if (bytes.lengthInBytes != productionByteLength) {
       throw StateError(
-        'The production Dhamma catalogue is missing. Run `python3 tool/catalogue.py fetch` before a release build.',
+        'The production Dhamma catalogue is missing or invalid. Verify assets/catalogue/dhamma.db before running the app.',
       );
     }
   }

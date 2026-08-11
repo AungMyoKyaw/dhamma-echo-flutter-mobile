@@ -46,7 +46,7 @@ build-android: verify-catalogue
 build-ios: verify-catalogue
 	$(FLUTTER) build ios --release --no-codesign
 
-verify: repository-check format-check lint check-tests coverage
+verify: verify-catalogue repository-check format-check lint check-tests coverage
 
 clean:
 	$(FLUTTER) clean

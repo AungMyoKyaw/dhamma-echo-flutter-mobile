@@ -30,8 +30,8 @@ jobs:
           cache: true
       - name: Generate mobile platform folders
         run: make bootstrap
-      - name: Fetch verified production catalogue
-        run: make catalogue
+      - name: Verify bundled production catalogue
+        run: make verify-catalogue
       - name: Resolve Dart dependencies
         run: make deps
       - name: Repository contract
@@ -64,8 +64,8 @@ jobs:
           cache: true
       - name: Generate mobile platform folders
         run: make bootstrap
-      - name: Fetch verified production catalogue
-        run: make catalogue
+      - name: Verify bundled production catalogue
+        run: make verify-catalogue
       - name: Resolve Dart dependencies
         run: make deps
       - name: Build iOS without signing
