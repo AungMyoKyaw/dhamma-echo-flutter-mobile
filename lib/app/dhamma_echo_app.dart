@@ -38,53 +38,74 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
   }
 
   ThemeData _theme() {
-    const scheme = ColorScheme.light(
-      primary: Color(0xFF8C3F08),
-      onPrimary: Color(0xFFFFE9E0),
-      primaryContainer: Color(0xFF9B4B15),
-      onPrimaryContainer: Colors.white,
-      secondary: Color(0xFF485B37),
-      onSecondary: Color(0xFFDEF5C6),
-      secondaryContainer: Color(0xFF546742),
-      onSecondaryContainer: Colors.white,
-      tertiary: Color(0xFF6E5014),
-      onTertiary: Color(0xFFFFEACD),
-      error: Color(0xFF913834),
-      surface: Color(0xFFFCF9F2),
-      onSurface: Color(0xFF2E2E2A),
-      onSurfaceVariant: Color(0xFF565550),
-      outline: Color(0xFF72716B),
-      outlineVariant: Color(0xFF9D9B96),
-    );
+    final scheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF2F5D50),
+      brightness: Brightness.light,
+    ).copyWith(surface: const Color(0xFFF8FAF7));
+    final outline = scheme.outlineVariant;
+    const cardRadius = BorderRadius.all(Radius.circular(18));
+    const inputRadius = BorderRadius.all(Radius.circular(16));
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: scheme.surface,
-      appBarTheme: const AppBarTheme(
+      scaffoldBackgroundColor: const Color(0xFFF8FAF7),
+      appBarTheme: AppBarTheme(
         centerTitle: false,
-        backgroundColor: Color(0xFFFCF9F2),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: const Color(0xFFF8FAF7),
+        foregroundColor: scheme.onSurface,
         surfaceTintColor: Colors.transparent,
       ),
-      cardTheme: const CardThemeData(
+      cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
         margin: EdgeInsets.zero,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(18)),
-          side: BorderSide(color: Color(0xFFD5D1C8)),
+          borderRadius: cardRadius,
+          side: BorderSide(color: outline),
         ),
       ),
-      inputDecorationTheme: const InputDecorationTheme(
+      inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
+        border: const OutlineInputBorder(borderRadius: inputRadius),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: inputRadius,
+          borderSide: BorderSide(color: outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: inputRadius,
+          borderSide: BorderSide(color: scheme.primary, width: 1.5),
         ),
       ),
-      navigationBarTheme: const NavigationBarThemeData(
+      searchBarTheme: SearchBarThemeData(
+        elevation: const WidgetStatePropertyAll<double?>(0.0),
+        backgroundColor: const WidgetStatePropertyAll<Color?>(Colors.white),
+        surfaceTintColor: const WidgetStatePropertyAll<Color?>(
+          Colors.transparent,
+        ),
+        side: WidgetStatePropertyAll<BorderSide?>(
+          BorderSide(color: outline),
+        ),
+        shape: const WidgetStatePropertyAll<OutlinedBorder?>(
+          RoundedRectangleBorder(borderRadius: cardRadius),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
         height: 72,
+        elevation: 0,
         backgroundColor: Colors.white,
-        indicatorColor: Color(0xFFF0EEE7),
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: scheme.secondaryContainer,
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return IconThemeData(color: scheme.onSecondaryContainer);
+          }
+          return IconThemeData(color: scheme.onSurfaceVariant);
+        }),
       ),
     );
   }
