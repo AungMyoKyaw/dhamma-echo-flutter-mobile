@@ -44,7 +44,7 @@ lib/                    Flutter production code
   ui/                   screens and components
 test/                   unit, repository, controller, and widget tests
 assets/catalogue/       bundled catalogue slot
-assets/images/          source app icon
+assets/images/          app-icon master, vector source, and Android adaptive layers
 docs/architecture/      Mermaid engineering diagrams
 tool/                   reproducible catalogue/platform/quality tooling
 .github/workflows/      CI
@@ -99,7 +99,8 @@ The bootstrap step then applies:
 - Android Internet, wake-lock, and foreground media-playback permissions
 - Android audio service, media-button receiver, and foreground playback service declaration
 - iOS `audio` background mode
-- Android and iOS app-icon variants generated from `assets/images/app-icon.png`
+- iOS app-icon variants generated from an opaque 1024 px full-bleed master
+- Android legacy launcher icons plus adaptive foreground/background/monochrome layers
 
 ## Development
 

@@ -15,6 +15,9 @@ ANDROID_BUILD = ROOT / "android/app/build.gradle.kts"
 IOS_PLIST = ROOT / "ios/Runner/Info.plist"
 IOS_PROJECT = ROOT / "ios/Runner.xcodeproj/project.pbxproj"
 ICON = ROOT / "assets/images/app-icon.png"
+ICON_FOREGROUND = ROOT / "assets/images/app-icon-foreground.png"
+ICON_MONOCHROME = ROOT / "assets/images/app-icon-monochrome.png"
+ANDROID_ICON_BACKGROUND = "#173F35"
 BUNDLE_ID = "com.aungmyokyaw.dhammaecho"
 AUDIO_SERVICE_ACTIVITY = "com.ryanheise.audioservice.AudioServiceActivity"
 AUDIO_SERVICE = "com.ryanheise.audioservice.AudioService"
@@ -178,20 +181,55 @@ def resize_icon(source: Image.Image, destination: Path, size: int) -> None:
     )
 
 
-def configure_android_icons(source: Image.Image) -> None:
-    sizes = {
+def configure_android_icons(
+    source: Image.Image,
+    foreground: Image.Image,
+    monochrome: Image.Image,
+) -> None:
+    legacy_sizes = {
         "mdpi": 48,
         "hdpi": 72,
         "xhdpi": 96,
         "xxhdpi": 144,
         "xxxhdpi": 192,
     }
-    for density, size in sizes.items():
+    adaptive_sizes = {
+        "mdpi": 108,
+        "hdpi": 162,
+        "xhdpi": 216,
+        "xxhdpi": 324,
+        "xxxhdpi": 432,
+    }
+    for density, size in legacy_sizes.items():
         resize_icon(
             source,
             ROOT / f"android/app/src/main/res/mipmap-{density}/ic_launcher.png",
             size,
         )
+    for density, size in adaptive_sizes.items():
+        directory = ROOT / f"android/app/src/main/res/mipmap-{density}"
+        resize_icon(foreground, directory / "ic_launcher_foreground.png", size)
+        resize_icon(monochrome, directory / "ic_launcher_monochrome.png", size)
+
+    values = ROOT / "android/app/src/main/res/values"
+    values.mkdir(parents=True, exist_ok=True)
+    (values / "dhamma_echo_icons.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<resources>\n'
+        f'    <color name="ic_launcher_background">{ANDROID_ICON_BACKGROUND}</color>\n'
+        '</resources>\n'
+    )
+
+    adaptive = ROOT / "android/app/src/main/res/mipmap-anydpi-v26"
+    adaptive.mkdir(parents=True, exist_ok=True)
+    (adaptive / "ic_launcher.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
+        '    <background android:drawable="@color/ic_launcher_background" />\n'
+        '    <foreground android:drawable="@mipmap/ic_launcher_foreground" />\n'
+        '    <monochrome android:drawable="@mipmap/ic_launcher_monochrome" />\n'
+        '</adaptive-icon>\n'
+    )
 
 
 def configure_ios_icons(source: Image.Image) -> None:
@@ -217,7 +255,15 @@ def configure_ios_icons(source: Image.Image) -> None:
 
 
 def main() -> int:
-    required = (ANDROID_MANIFEST, ANDROID_BUILD, IOS_PLIST, IOS_PROJECT, ICON)
+    required = (
+        ANDROID_MANIFEST,
+        ANDROID_BUILD,
+        IOS_PLIST,
+        IOS_PROJECT,
+        ICON,
+        ICON_FOREGROUND,
+        ICON_MONOCHROME,
+    )
     missing = [str(path.relative_to(ROOT)) for path in required if not path.exists()]
     if missing:
         print(
@@ -227,9 +273,15 @@ def main() -> int:
         return 1
     configure_identifiers()
     verify_configuration()
-    with Image.open(ICON) as raw_source:
+    with (
+        Image.open(ICON) as raw_source,
+        Image.open(ICON_FOREGROUND) as raw_foreground,
+        Image.open(ICON_MONOCHROME) as raw_monochrome,
+    ):
         source = raw_source.convert("RGBA")
-        configure_android_icons(source)
+        foreground = raw_foreground.convert("RGBA")
+        monochrome = raw_monochrome.convert("RGBA")
+        configure_android_icons(source, foreground, monochrome)
         configure_ios_icons(source)
     print("platform configuration applied")
     return 0
