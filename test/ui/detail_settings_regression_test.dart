@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dhamma_echo/app/app_controller.dart';
+import 'package:dhamma_echo/app/dhamma_echo_app.dart';
 import 'package:dhamma_echo/data/catalogue_repository.dart';
 import 'package:dhamma_echo/domain/models.dart';
 import 'package:dhamma_echo/downloads/download_client.dart';
@@ -37,41 +38,42 @@ void main() {
     expect(find.textContaining('keeps downloads'), findsOneWidget);
   });
 
-  testWidgets('active mini player persists on collection detail without refetching', (
-    tester,
-  ) async {
-    final catalogue = DetailCatalogue();
-    final port = DetailPlaybackPort();
-    final controller = AppController(
-      catalogue: catalogue,
-      playback: PlaybackController(port),
-    );
-    addTearDown(controller.dispose);
-    await controller.initialize(
-      persistedState: const PersistedState.defaults(),
-    );
-    await controller.play(DetailCatalogue.track);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: CollectionDetailScreen(
-          controller: controller,
-          collection: DetailCatalogue.collection,
+  testWidgets(
+    'active mini player persists on collection detail without refetching',
+    (tester) async {
+      final catalogue = DetailCatalogue();
+      final port = DetailPlaybackPort();
+      final controller = AppController(
+        catalogue: catalogue,
+        playback: PlaybackController(port),
+      );
+      addTearDown(controller.dispose);
+      await controller.initialize(
+        persistedState: const PersistedState.defaults(),
+      );
+      await controller.play(DetailCatalogue.track);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: CollectionDetailScreen(
+            controller: controller,
+            collection: DetailCatalogue.collection,
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('mini-player')), findsOneWidget);
-    expect(catalogue.collectionDetailCalls, 1);
-    expect(find.text('Collection Seven'), findsOneWidget);
+      expect(find.byKey(const Key('mini-player')), findsOneWidget);
+      expect(catalogue.collectionDetailCalls, 1);
+      expect(find.text('Collection Seven'), findsOneWidget);
 
-    port.emit(const PlaybackPositionEvent(Duration(seconds: 5)));
-    await tester.pump();
+      port.emit(const PlaybackPositionEvent(Duration(seconds: 5)));
+      await tester.pump();
 
-    expect(catalogue.collectionDetailCalls, 1);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-    expect(find.text('Collection Seven'), findsOneWidget);
-  });
+      expect(catalogue.collectionDetailCalls, 1);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('Collection Seven'), findsOneWidget);
+    },
+  );
 
   testWidgets('active mini player persists on teacher detail', (tester) async {
     final catalogue = DetailCatalogue();
@@ -89,11 +91,7 @@ void main() {
       MaterialApp(
         home: TeacherDetailScreen(
           controller: controller,
-          teacher: const TeacherSummary(
-            id: 16,
-            name: 'Teacher',
-            audioCount: 1,
-          ),
+          teacher: const TeacherSummary(id: 16, name: 'Teacher', audioCount: 1),
         ),
       ),
     );
@@ -108,7 +106,9 @@ void main() {
   });
 
   testWidgets('track row downloads and removes offline media', (tester) async {
-    final directory = await Directory.systemTemp.createTemp('dhamma-ui-download-');
+    final directory = await Directory.systemTemp.createTemp(
+      'dhamma-ui-download-',
+    );
     addTearDown(() async {
       if (await directory.exists()) await directory.delete(recursive: true);
     });
@@ -127,10 +127,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: TrackTile(
-            controller: controller,
-            track: DetailCatalogue.track,
-          ),
+          body: TrackTile(controller: controller, track: DetailCatalogue.track),
         ),
       ),
     );
@@ -167,6 +164,31 @@ void main() {
 
     expect(controller.playback.current, DetailCatalogue.track);
     expect(controller.playback.playing, isTrue);
+  });
+
+  testWidgets('active track row uses the shared sage selected surface', (
+    tester,
+  ) async {
+    final controller = AppController(
+      catalogue: DetailCatalogue(),
+      playback: PlaybackController(DetailPlaybackPort()),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await controller.play(DetailCatalogue.track);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildDhammaEchoTheme(),
+        home: Scaffold(
+          body: TrackTile(controller: controller, track: DetailCatalogue.track),
+        ),
+      ),
+    );
+
+    final tile = tester.widget<ListTile>(find.byType(ListTile));
+    expect(tile.tileColor, DhammaEchoColors.sage);
   });
 
   testWidgets('collection Explore filter returns to the root Explore surface', (

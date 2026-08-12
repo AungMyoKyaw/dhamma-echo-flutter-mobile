@@ -26,7 +26,7 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
       debugShowCheckedModeBanner: false,
       title: 'Dhamma Echo',
       themeMode: ThemeMode.light,
-      theme: _theme(),
+      theme: buildDhammaEchoTheme(),
       home: MainShell(controller: widget.controller),
     );
   }
@@ -36,107 +36,150 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
     widget.controller.dispose();
     super.dispose();
   }
-
-  ThemeData _theme() {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF8C3F08),
-      brightness: Brightness.light,
-    ).copyWith(
-      primary: const Color(0xFF8C3F08),
-      onPrimary: const Color(0xFFFFE3D5),
-      primaryContainer: const Color(0xFF9B4B15),
-      onPrimaryContainer: const Color(0xFFFFFCFF),
-      secondary: const Color(0xFF485B37),
-      onSecondary: const Color(0xFFD9F0C1),
-      secondaryContainer: const Color(0xFF546742),
-      onSecondaryContainer: const Color(0xFFFAFFEF),
-      tertiary: const Color(0xFF6E5014),
-      onTertiary: const Color(0xFFFFE4BC),
-      tertiaryContainer: const Color(0xFF7B5C1F),
-      onTertiaryContainer: const Color(0xFFFFFCFF),
-      error: const Color(0xFF8D3531),
-      onError: const Color(0xFFFFF7F6),
-      surface: const Color(0xFFFCF9F2),
-      onSurface: const Color(0xFF2E2E2A),
-      onSurfaceVariant: const Color(0xFF565550),
-      outline: const Color(0xFFD5D1C8),
-      outlineVariant: const Color(0xFFD5D1C8),
-      surfaceContainerLowest: const Color(0xFFFFFFFF),
-      surfaceContainerLow: const Color(0xFFF6F3EC),
-      surfaceContainer: const Color(0xFFF0EEE7),
-      surfaceContainerHigh: const Color(0xFFEBE8E1),
-      surfaceContainerHighest: const Color(0xFFE5E2DB),
-    );
-    final outline = scheme.outlineVariant;
-    const cardRadius = BorderRadius.all(Radius.circular(18));
-    const inputRadius = BorderRadius.all(Radius.circular(16));
-
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: scheme.surface,
-      appBarTheme: AppBarTheme(
-        centerTitle: false,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        backgroundColor: scheme.surface,
-        foregroundColor: scheme.onSurface,
-        surfaceTintColor: Colors.transparent,
-      ),
-      cardTheme: CardThemeData(
-        color: scheme.surfaceContainerLowest,
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: cardRadius,
-          side: BorderSide(color: outline),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: scheme.surfaceContainerLowest,
-        border: const OutlineInputBorder(borderRadius: inputRadius),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: inputRadius,
-          borderSide: BorderSide(color: outline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: inputRadius,
-          borderSide: BorderSide(color: scheme.primary, width: 1.5),
-        ),
-      ),
-      searchBarTheme: SearchBarThemeData(
-        elevation: const WidgetStatePropertyAll<double?>(0.0),
-        backgroundColor: WidgetStatePropertyAll<Color?>(
-          scheme.surfaceContainerLowest,
-        ),
-        surfaceTintColor: const WidgetStatePropertyAll<Color?>(
-          Colors.transparent,
-        ),
-        side: WidgetStatePropertyAll<BorderSide?>(
-          BorderSide(color: outline),
-        ),
-        shape: const WidgetStatePropertyAll<OutlinedBorder?>(
-          RoundedRectangleBorder(borderRadius: cardRadius),
-        ),
-      ),
-      navigationBarTheme: NavigationBarThemeData(
-        height: 72,
-        elevation: 0,
-        backgroundColor: scheme.surfaceContainerLowest,
-        surfaceTintColor: Colors.transparent,
-        indicatorColor: scheme.secondaryContainer,
-        iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>((states) {
-          if (states.contains(WidgetState.selected)) {
-            return IconThemeData(color: scheme.onSecondaryContainer);
-          }
-          return IconThemeData(color: scheme.onSurfaceVariant);
-        }),
-      ),
-    );
-  }
 }
+
+abstract final class DhammaEchoColors {
+  static const forest = Color(0xFF245C45);
+  static const onForest = Color(0xFFFFFFFF);
+  static const sage = Color(0xFFD6E8DC);
+  static const onSage = Color(0xFF123A2A);
+  static const parchment = Color(0xFFFAF7F0);
+  static const warmWhite = Color(0xFFFFFEFA);
+  static const charcoal = Color(0xFF20231F);
+  static const secondaryText = Color(0xFF5C625C);
+  static const outline = Color(0xFF837F76);
+  static const outlineVariant = Color(0xFFC9C5BB);
+  static const error = Color(0xFF9B3D35);
+  static const onError = Color(0xFFFFFFFF);
+}
+
+ThemeData buildDhammaEchoTheme() {
+  final scheme =
+      ColorScheme.fromSeed(
+        seedColor: DhammaEchoColors.forest,
+        brightness: Brightness.light,
+      ).copyWith(
+        primary: DhammaEchoColors.forest,
+        onPrimary: DhammaEchoColors.onForest,
+        primaryContainer: DhammaEchoColors.sage,
+        onPrimaryContainer: DhammaEchoColors.onSage,
+        secondary: DhammaEchoColors.forest,
+        onSecondary: DhammaEchoColors.onForest,
+        secondaryContainer: DhammaEchoColors.sage,
+        onSecondaryContainer: DhammaEchoColors.onSage,
+        tertiary: const Color(0xFF536A5B),
+        onTertiary: DhammaEchoColors.onForest,
+        tertiaryContainer: const Color(0xFFDCE7DF),
+        onTertiaryContainer: DhammaEchoColors.onSage,
+        error: DhammaEchoColors.error,
+        onError: DhammaEchoColors.onError,
+        surface: DhammaEchoColors.parchment,
+        onSurface: DhammaEchoColors.charcoal,
+        onSurfaceVariant: DhammaEchoColors.secondaryText,
+        outline: DhammaEchoColors.outline,
+        outlineVariant: DhammaEchoColors.outlineVariant,
+        surfaceContainerLowest: DhammaEchoColors.warmWhite,
+        surfaceContainerLow: const Color(0xFFF6F2EA),
+        surfaceContainer: const Color(0xFFF0ECE3),
+        surfaceContainerHigh: const Color(0xFFEAE6DD),
+        surfaceContainerHighest: const Color(0xFFE3DED4),
+      );
+  final outline = scheme.outlineVariant;
+  const cardRadius = BorderRadius.all(Radius.circular(18));
+  const inputRadius = BorderRadius.all(Radius.circular(16));
+
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: scheme.surface,
+    appBarTheme: AppBarTheme(
+      centerTitle: false,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      backgroundColor: scheme.surface,
+      foregroundColor: scheme.onSurface,
+      surfaceTintColor: Colors.transparent,
+    ),
+    cardTheme: CardThemeData(
+      color: scheme.surfaceContainerLowest,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: cardRadius,
+        side: BorderSide(color: outline),
+      ),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: scheme.surfaceContainerLowest,
+      selectedColor: scheme.primary,
+      disabledColor: scheme.surfaceContainerHigh,
+      labelStyle: TextStyle(color: scheme.onSurface),
+      secondaryLabelStyle: TextStyle(color: scheme.onPrimary),
+      checkmarkColor: scheme.onPrimary,
+      side: BorderSide(color: scheme.outline),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    sliderTheme: SliderThemeData(
+      activeTrackColor: scheme.primary,
+      inactiveTrackColor: scheme.outlineVariant,
+      thumbColor: scheme.primary,
+      overlayColor: scheme.primary.withValues(alpha: 0.12),
+      valueIndicatorColor: scheme.primary,
+      valueIndicatorTextStyle: TextStyle(color: scheme.onPrimary),
+    ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: scheme.primary,
+      linearTrackColor: scheme.outlineVariant,
+      circularTrackColor: scheme.outlineVariant,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: scheme.surfaceContainerLowest,
+      border: const OutlineInputBorder(borderRadius: inputRadius),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: inputRadius,
+        borderSide: BorderSide(color: outline),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: inputRadius,
+        borderSide: BorderSide(color: scheme.primary, width: 1.5),
+      ),
+    ),
+    searchBarTheme: SearchBarThemeData(
+      elevation: const WidgetStatePropertyAll<double?>(0.0),
+      backgroundColor: WidgetStatePropertyAll<Color?>(
+        scheme.surfaceContainerLowest,
+      ),
+      surfaceTintColor: const WidgetStatePropertyAll<Color?>(
+        Colors.transparent,
+      ),
+      side: WidgetStatePropertyAll<BorderSide?>(BorderSide(color: outline)),
+      shape: const WidgetStatePropertyAll<OutlinedBorder?>(
+        RoundedRectangleBorder(borderRadius: cardRadius),
+      ),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      height: 72,
+      elevation: 0,
+      backgroundColor: scheme.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: scheme.secondaryContainer,
+      iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return IconThemeData(color: scheme.onSecondaryContainer);
+        }
+        return IconThemeData(color: scheme.onSurfaceVariant);
+      }),
+    ),
+  );
+}
+
+NavigationDestinationLabelBehavior navigationLabelBehaviorFor(
+  double textScale,
+) => textScale > 1.3
+    ? NavigationDestinationLabelBehavior.onlyShowSelected
+    : NavigationDestinationLabelBehavior.alwaysShow;
 
 class MainShell extends StatefulWidget {
   const MainShell({required this.controller, super.key});
@@ -199,6 +242,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
           TeachersScreen(controller: controller),
           LibraryScreen(controller: controller),
         ];
+        final textScale = MediaQuery.textScalerOf(context).scale(1);
         return Scaffold(
           appBar: AppBar(
             title: const Row(
@@ -228,6 +272,8 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
             children: <Widget>[
               MiniPlayer(controller: controller, safeBottom: false),
               NavigationBar(
+                height: textScale > 1.3 ? 88 : 72,
+                labelBehavior: navigationLabelBehaviorFor(textScale),
                 selectedIndex: controller.selectedTab,
                 onDestinationSelected: controller.selectTab,
                 destinations: const <NavigationDestination>[

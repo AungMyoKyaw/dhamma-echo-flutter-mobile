@@ -43,7 +43,7 @@ class TrackTile extends StatelessWidget {
       onTap: track.playable && !(isCurrent && controller.playback.playing)
           ? () => controller.play(track)
           : null,
-      tileColor: isCurrent ? colors.primary.withValues(alpha: 0.06) : null,
+      tileColor: isCurrent ? colors.primaryContainer : null,
       shape: Border(bottom: BorderSide(color: colors.outlineVariant)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       leading: IconButton.filledTonal(
