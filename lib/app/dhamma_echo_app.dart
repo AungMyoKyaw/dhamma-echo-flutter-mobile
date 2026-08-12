@@ -39,9 +39,34 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
 
   ThemeData _theme() {
     final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2F5D50),
+      seedColor: const Color(0xFF8C3F08),
       brightness: Brightness.light,
-    ).copyWith(surface: const Color(0xFFF8FAF7));
+    ).copyWith(
+      primary: const Color(0xFF8C3F08),
+      onPrimary: const Color(0xFFFFE3D5),
+      primaryContainer: const Color(0xFF9B4B15),
+      onPrimaryContainer: const Color(0xFFFFFCFF),
+      secondary: const Color(0xFF485B37),
+      onSecondary: const Color(0xFFD9F0C1),
+      secondaryContainer: const Color(0xFF546742),
+      onSecondaryContainer: const Color(0xFFFAFFEF),
+      tertiary: const Color(0xFF6E5014),
+      onTertiary: const Color(0xFFFFE4BC),
+      tertiaryContainer: const Color(0xFF7B5C1F),
+      onTertiaryContainer: const Color(0xFFFFFCFF),
+      error: const Color(0xFF8D3531),
+      onError: const Color(0xFFFFF7F6),
+      surface: const Color(0xFFFCF9F2),
+      onSurface: const Color(0xFF2E2E2A),
+      onSurfaceVariant: const Color(0xFF565550),
+      outline: const Color(0xFFD5D1C8),
+      outlineVariant: const Color(0xFFD5D1C8),
+      surfaceContainerLowest: const Color(0xFFFFFFFF),
+      surfaceContainerLow: const Color(0xFFF6F3EC),
+      surfaceContainer: const Color(0xFFF0EEE7),
+      surfaceContainerHigh: const Color(0xFFEBE8E1),
+      surfaceContainerHighest: const Color(0xFFE5E2DB),
+    );
     final outline = scheme.outlineVariant;
     const cardRadius = BorderRadius.all(Radius.circular(18));
     const inputRadius = BorderRadius.all(Radius.circular(16));
@@ -49,17 +74,17 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: const Color(0xFFF8FAF7),
+      scaffoldBackgroundColor: scheme.surface,
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: const Color(0xFFF8FAF7),
+        backgroundColor: scheme.surface,
         foregroundColor: scheme.onSurface,
         surfaceTintColor: Colors.transparent,
       ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: scheme.surfaceContainerLowest,
         elevation: 0,
         margin: EdgeInsets.zero,
         surfaceTintColor: Colors.transparent,
@@ -70,7 +95,7 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: scheme.surfaceContainerLowest,
         border: const OutlineInputBorder(borderRadius: inputRadius),
         enabledBorder: OutlineInputBorder(
           borderRadius: inputRadius,
@@ -83,7 +108,9 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
       ),
       searchBarTheme: SearchBarThemeData(
         elevation: const WidgetStatePropertyAll<double?>(0.0),
-        backgroundColor: const WidgetStatePropertyAll<Color?>(Colors.white),
+        backgroundColor: WidgetStatePropertyAll<Color?>(
+          scheme.surfaceContainerLowest,
+        ),
         surfaceTintColor: const WidgetStatePropertyAll<Color?>(
           Colors.transparent,
         ),
@@ -97,7 +124,7 @@ class _DhammaEchoAppState extends State<DhammaEchoApp> {
       navigationBarTheme: NavigationBarThemeData(
         height: 72,
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: scheme.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         indicatorColor: scheme.secondaryContainer,
         iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>((states) {

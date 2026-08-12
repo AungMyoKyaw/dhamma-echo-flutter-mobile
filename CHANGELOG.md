@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Aligned the Flutter Material 3 palette with the current desktop saffron/olive/cream brand tokens and added regression coverage for the exact theme roles.
 - Fixed now-playing state so the mini player appears as soon as playback starts instead of waiting for the long-lived audio `play()` future to finish.
 - Added persistent Now Playing access on detail/settings routes and removed playback-position rebuilds that could make teacher/collection screens flicker.
 - Added background playback metadata and generated Android/iOS media-service configuration.

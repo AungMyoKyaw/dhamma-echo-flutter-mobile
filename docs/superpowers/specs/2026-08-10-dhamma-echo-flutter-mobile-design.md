@@ -84,8 +84,8 @@ Material 3 light-only palette derived from the desktop tokens through Design.md:
 - surface container `#f0eee7`
 - text `#2e2e2a`
 - muted text `#565550`
-- outline `#72716b`
-- error `#913834`
+- border/outline `#d5d1c8`
+- error `#8d3531`
 
 Use generous 16/20/24 spacing, rounded 16–20 dp cards, minimum 48 dp touch targets, semantic labels, visible loading/error/empty states, no decorative gradients, no bundled fonts, and reduced-motion-safe transitions.
 

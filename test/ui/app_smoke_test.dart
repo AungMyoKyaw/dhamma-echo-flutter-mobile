@@ -59,7 +59,23 @@ void main() {
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     final theme = app.theme!;
-    expect(theme.scaffoldBackgroundColor, const Color(0xFFF8FAF7));
+    expect(theme.colorScheme.primary, const Color(0xFF8C3F08));
+    expect(theme.colorScheme.secondary, const Color(0xFF485B37));
+    expect(theme.colorScheme.tertiary, const Color(0xFF6E5014));
+    expect(theme.colorScheme.surface, const Color(0xFFFCF9F2));
+    expect(theme.colorScheme.surfaceContainerLowest, Colors.white);
+    expect(theme.colorScheme.surfaceContainer, const Color(0xFFF0EEE7));
+    expect(theme.colorScheme.onSurface, const Color(0xFF2E2E2A));
+    expect(theme.colorScheme.onSurfaceVariant, const Color(0xFF565550));
+    expect(theme.colorScheme.outlineVariant, const Color(0xFFD5D1C8));
+    expect(theme.colorScheme.error, const Color(0xFF8D3531));
+    expect(theme.scaffoldBackgroundColor, const Color(0xFFFCF9F2));
+    expect(theme.cardTheme.color, Colors.white);
+    expect(theme.navigationBarTheme.backgroundColor, Colors.white);
+    expect(
+      theme.searchBarTheme.backgroundColor?.resolve(<WidgetState>{}),
+      Colors.white,
+    );
     expect(
       theme.navigationBarTheme.indicatorColor,
       theme.colorScheme.secondaryContainer,
