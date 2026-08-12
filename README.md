@@ -44,7 +44,7 @@ lib/                    Flutter production code
   ui/                   screens and components
 test/                   unit, repository, controller, and widget tests
 assets/catalogue/       bundled catalogue slot
-assets/images/          app-icon master, vector source, and Android adaptive layers
+assets/images/          AI-generated app-icon source, master, and Android adaptive layers
 docs/architecture/      Mermaid engineering diagrams
 tool/                   reproducible catalogue/platform/quality tooling
 .github/workflows/      CI
@@ -101,6 +101,7 @@ The bootstrap step then applies:
 - iOS `audio` background mode
 - iOS app-icon variants generated from an opaque 1024 px full-bleed master
 - Android legacy launcher icons plus adaptive foreground/background/monochrome layers
+- AI-generated icon source retained as `assets/images/app-icon-ai-source.png`; platform masters/layers are derived from it
 
 ## Development
 

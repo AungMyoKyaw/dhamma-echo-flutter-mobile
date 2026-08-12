@@ -18,6 +18,9 @@ from configure_platforms import (
 
 
 class ConfigurePlatformsTest(unittest.TestCase):
+    def test_android_icon_background_matches_desktop_palette(self) -> None:
+        self.assertEqual(configure_platforms.ANDROID_ICON_BACKGROUND, "#FCF9F2")
+
     def test_android_background_audio_configuration_is_idempotent(self) -> None:
         manifest = """<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">
   <application android:label=\"old\">

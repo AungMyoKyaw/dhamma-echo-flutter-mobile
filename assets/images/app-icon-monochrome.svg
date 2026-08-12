@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- Simplified single-color variant for Android themed icons. -->
-  <path d="M512 690 C470 638 441 579 441 518 C441 438 474 364 512 305 C550 364 583 438 583 518 C583 579 554 638 512 690 Z" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linejoin="round"/>
-  <path d="M487 702 C424 695 367 659 335 601 C305 547 301 476 307 415 C370 421 432 449 466 503 C498 555 500 627 487 702 Z" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linejoin="round"/>
-  <path d="M537 702 C584 694 624 668 651 628 C677 590 689 547 690 505 C648 511 608 528 578 555 C548 582 533 623 537 702 Z" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linejoin="round"/>
-  <path d="M646 436 C691 457 720 494 730 538" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round"/>
-  <path d="M664 376 C731 407 775 462 790 532" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round"/>
-  <path d="M348 724 C440 774 584 774 675 724" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round"/>
-</svg>
