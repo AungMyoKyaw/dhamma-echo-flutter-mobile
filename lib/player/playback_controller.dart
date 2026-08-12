@@ -65,6 +65,7 @@ class PlaybackController extends ChangeNotifier {
 
     for (final candidate in candidates) {
       try {
+        _duration = Duration.zero;
         await _port.load(track, candidate);
         await _port.setVolume(_volume);
         await _port.setSpeed(_rate);
@@ -77,7 +78,6 @@ class PlaybackController extends ChangeNotifier {
 
         _current = track;
         _position = resumePosition;
-        _duration = Duration.zero;
         _loading = false;
         _playing = true;
         _notify(controls: true);

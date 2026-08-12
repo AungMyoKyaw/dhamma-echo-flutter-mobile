@@ -40,6 +40,9 @@ class TrackTile extends StatelessWidget {
     final progress = controller.downloadProgress(track.id);
 
     return ListTile(
+      onTap: track.playable && !(isCurrent && controller.playback.playing)
+          ? () => controller.play(track)
+          : null,
       tileColor: isCurrent ? colors.primary.withValues(alpha: 0.06) : null,
       shape: Border(bottom: BorderSide(color: colors.outlineVariant)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

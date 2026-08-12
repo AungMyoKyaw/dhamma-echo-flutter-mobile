@@ -55,6 +55,17 @@ void main() {
     expect(playingBeforePortCompletes, isTrue);
   });
 
+  test('play preserves duration emitted while the source loads', () async {
+    final port = FakePlaybackPort(
+      loadDuration: const Duration(minutes: 12, seconds: 34),
+    );
+    final controller = PlaybackController(port);
+    addTearDown(controller.dispose);
+
+    expect(await controller.play(fixtureTrack()), isTrue);
+    expect(controller.duration, const Duration(minutes: 12, seconds: 34));
+  });
+
   test('toggle resumes without waiting for port play lifetime', () async {
     final port = FakePlaybackPort();
     final controller = PlaybackController(port);
@@ -124,10 +135,17 @@ AudioTrack fixtureTrack({
 }
 
 class FakePlaybackPort implements PlaybackPort {
-  FakePlaybackPort({this.failuresBeforeSuccess = 0, this.playCompleter});
+  FakePlaybackPort({
+    this.failuresBeforeSuccess = 0,
+    this.playCompleter,
+    this.loadDuration,
+  });
 
   final int failuresBeforeSuccess;
   Completer<void>? playCompleter;
+  final Duration? loadDuration;
+  final StreamController<PlaybackPortEvent> _events =
+      StreamController<PlaybackPortEvent>.broadcast(sync: true);
   final List<Uri> urls = <Uri>[];
   final List<AudioTrack> loadedTracks = <AudioTrack>[];
   Duration? lastSeek;
@@ -136,11 +154,10 @@ class FakePlaybackPort implements PlaybackPort {
   int attempts = 0;
 
   @override
-  Stream<PlaybackPortEvent> get events =>
-      const Stream<PlaybackPortEvent>.empty();
+  Stream<PlaybackPortEvent> get events => _events.stream;
 
   @override
-  Future<void> dispose() async {}
+  Future<void> dispose() => _events.close();
 
   @override
   Future<void> load(AudioTrack track, Uri uri) async {
@@ -149,6 +166,9 @@ class FakePlaybackPort implements PlaybackPort {
     attempts += 1;
     if (attempts <= failuresBeforeSuccess) {
       throw StateError('fail');
+    }
+    if (loadDuration case final duration?) {
+      _events.add(PlaybackDurationEvent(duration));
     }
   }
 

@@ -145,6 +145,30 @@ void main() {
     expect(find.byIcon(Icons.download_rounded), findsOneWidget);
   });
 
+  testWidgets('tapping a playable track row starts playback', (tester) async {
+    final controller = AppController(
+      catalogue: DetailCatalogue(),
+      playback: PlaybackController(DetailPlaybackPort()),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TrackTile(controller: controller, track: DetailCatalogue.track),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text(DetailCatalogue.track.title));
+    await tester.pumpAndSettle();
+
+    expect(controller.playback.current, DetailCatalogue.track);
+    expect(controller.playback.playing, isTrue);
+  });
+
   testWidgets('collection Explore filter returns to the root Explore surface', (
     tester,
   ) async {
