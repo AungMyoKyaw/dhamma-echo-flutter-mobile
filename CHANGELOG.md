@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Prevented stale audio, collection, and teacher searches from overwriting newer results or errors.
+- Prevented overlapping playback requests from committing stale track state after a newer play request starts.
+- Reduced track-row action density to one accessible overflow menu and made the current-track control pause/resume without reloading audio.
+- Replaced the download/remove widget regression's unbounded settling step with a bounded state-driven wait and added compact-width accessibility coverage.
 - Aligned the Flutter Material 3 palette with the current desktop saffron/olive/cream brand tokens and added regression coverage for the exact theme roles.
 - Regenerated the application icon with AI to match the desktop saffron/cream/olive identity and derived Android adaptive/monochrome layers from the new artwork.
 - Fixed now-playing state so the mini player appears as soon as playback starts instead of waiting for the long-lived audio `play()` future to finish.

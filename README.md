@@ -10,6 +10,7 @@ This is a native Flutter port of the current Dhamma Echo desktop product. The su
 - Search 30,563 audio talks from the current production catalogue and browse 257 teachers / 429 audio collections.
 - Filter by language, format, teacher, category, and collection.
 - Explicit 50-talk and 24-collection pagination.
+- Last-request-wins search and playback orchestration prevents stale asynchronous completions from replacing newer user intent.
 - Curated teacher ordering with IDs `16, 42, 40, 53, 61, 8`.
 - Local favorites, 100-entry listening history, 500-entry resume map, rate, and volume settings.
 - Persistent mini-player plus a full Now Playing screen with queue, next track, seek, 15-second jumps, volume, and rates from `0.75×` through `2×`.
@@ -165,10 +166,13 @@ See [SECURITY.md](SECURITY.md) and the [system context diagram](docs/architectur
 - [Module architecture](docs/architecture/modules.md)
 - [Catalogue and local-state flow](docs/architecture/data-flow.md)
 - [Playback sequence](docs/architecture/playback-sequence.md)
+- [Async request concurrency](docs/architecture/concurrency.md)
 - [Background playback and offline downloads](docs/architecture/offline-playback.md)
 - [Build/release flow](docs/architecture/release.md)
 - [Mobile design specification](docs/superpowers/specs/2026-08-10-dhamma-echo-flutter-mobile-design.md)
 - [Implementation plan](docs/superpowers/plans/2026-08-10-dhamma-echo-flutter-mobile.md)
+- [Production-readiness design](docs/superpowers/specs/2026-08-12-production-readiness-design.md)
+- [Production-readiness Ralph Loop](docs/superpowers/plans/2026-08-12-production-readiness.md)
 
 ## Troubleshooting
 

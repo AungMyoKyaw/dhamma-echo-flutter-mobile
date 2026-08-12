@@ -2,7 +2,7 @@
 
 ## Supported branch
 
-Security fixes target the current `main` branch.
+Security fixes target the current `master` branch.
 
 ## Report a vulnerability
 

@@ -35,3 +35,5 @@ sequenceDiagram
 ```
 
 `AudioPlayer.play()` is intentionally not awaited as the definition of "playback started" because its future stays alive until playback later pauses, stops, or completes. UI state is established after source preparation and before the long-lived play future is observed asynchronously.
+
+When multiple `play()` requests overlap, `PlaybackController` assigns each request a generation and checks it after asynchronous source/setup operations. A stale request returns without committing controller state, so a slower older load cannot replace the user's newer selection. See [Async Request Concurrency](concurrency.md).
