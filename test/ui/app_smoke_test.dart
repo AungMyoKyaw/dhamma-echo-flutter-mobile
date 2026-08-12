@@ -89,6 +89,8 @@ void main() {
     await tester.tap(find.text('Library'));
     await tester.pumpAndSettle();
     expect(find.text('Your library'), findsOneWidget);
+    expect(find.text('Downloads'), findsOneWidget);
+    expect(find.text('No downloads yet'), findsOneWidget);
   });
 
   testWidgets('selecting a talk shows the persistent mini player', (
@@ -206,7 +208,7 @@ class FakePlaybackPort implements PlaybackPort {
   Future<void> dispose() async {}
 
   @override
-  Future<void> load(Uri uri) async {}
+  Future<void> load(AudioTrack track, Uri uri) async {}
 
   @override
   Future<void> pause() async {}

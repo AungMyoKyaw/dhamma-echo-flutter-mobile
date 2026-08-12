@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply Dhamma Echo identifiers, display names, network permission, and icons."""
+"""Apply Dhamma Echo identifiers, background playback config, and icons."""
 from __future__ import annotations
 
 import json
@@ -16,6 +16,9 @@ IOS_PLIST = ROOT / "ios/Runner/Info.plist"
 IOS_PROJECT = ROOT / "ios/Runner.xcodeproj/project.pbxproj"
 ICON = ROOT / "assets/images/app-icon.png"
 BUNDLE_ID = "com.aungmyokyaw.dhammaecho"
+AUDIO_SERVICE_ACTIVITY = "com.ryanheise.audioservice.AudioServiceActivity"
+AUDIO_SERVICE = "com.ryanheise.audioservice.AudioService"
+MEDIA_BUTTON_RECEIVER = "com.ryanheise.audioservice.MediaButtonReceiver"
 
 
 def _replace(path: Path, old: str, new: str) -> None:
@@ -24,25 +27,107 @@ def _replace(path: Path, old: str, new: str) -> None:
         path.write_text(text.replace(old, new))
 
 
+def _ensure_manifest_permission(manifest: str, permission: str) -> str:
+    if permission in manifest:
+        return manifest
+    closing = manifest.find(">")
+    if closing < 0:
+        raise ValueError("Android manifest has no opening element")
+    declaration = f'\n    <uses-permission android:name="{permission}" />'
+    return manifest[: closing + 1] + declaration + manifest[closing + 1 :]
+
+
+def _configure_android_manifest(manifest: str) -> str:
+    if 'xmlns:tools="http://schemas.android.com/tools"' not in manifest:
+        manifest = manifest.replace(
+            '<manifest xmlns:android="http://schemas.android.com/apk/res/android"',
+            '<manifest xmlns:android="http://schemas.android.com/apk/res/android"\n'
+            '    xmlns:tools="http://schemas.android.com/tools"',
+            1,
+        )
+
+    for permission in (
+        "android.permission.INTERNET",
+        "android.permission.WAKE_LOCK",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+    ):
+        manifest = _ensure_manifest_permission(manifest, permission)
+
+    manifest = re.sub(
+        r'(<activity\s+[^>]*android:name=")[^"]+("[^>]*>)',
+        rf"\1{AUDIO_SERVICE_ACTIVITY}\2",
+        manifest,
+        count=1,
+        flags=re.DOTALL,
+    )
+
+    if f'android:name="{AUDIO_SERVICE}"' not in manifest:
+        service = f'''
+        <service
+            android:name="{AUDIO_SERVICE}"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+        <receiver
+            android:name="{MEDIA_BUTTON_RECEIVER}"
+            android:exported="true"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+'''
+        manifest = manifest.replace("</application>", service + "</application>", 1)
+
+    return re.sub(
+        r'android:label="[^"]*"',
+        'android:label="Dhamma Echo"',
+        manifest,
+        count=1,
+    )
+
+
+def _configure_ios_plist(plist: str) -> str:
+    plist = re.sub(
+        r'(<key>CFBundleDisplayName</key>\s*<string>)[^<]*(</string>)',
+        r"\1Dhamma Echo\2",
+        plist,
+        count=1,
+    )
+    if "<key>UIBackgroundModes</key>" not in plist:
+        plist = plist.replace(
+            "</dict>",
+            "\t<key>UIBackgroundModes</key>\n"
+            "\t<array>\n"
+            "\t\t<string>audio</string>\n"
+            "\t</array>\n"
+            "</dict>",
+            1,
+        )
+    elif "<string>audio</string>" not in plist:
+        plist = re.sub(
+            r"(<key>UIBackgroundModes</key>\s*<array>)",
+            r"\1\n\t\t<string>audio</string>",
+            plist,
+            count=1,
+        )
+    return plist
+
+
 def configure_identifiers() -> None:
-    manifest = ANDROID_MANIFEST.read_text()
-    if "android.permission.INTERNET" not in manifest:
-        closing = manifest.find(">")
-        manifest = manifest[: closing + 1] + '\n    <uses-permission android:name="android.permission.INTERNET" />' + manifest[closing + 1 :]
-    manifest = re.sub(r'android:label="[^"]*"', 'android:label="Dhamma Echo"', manifest, count=1)
-    ANDROID_MANIFEST.write_text(manifest)
+    ANDROID_MANIFEST.write_text(
+        _configure_android_manifest(ANDROID_MANIFEST.read_text())
+    )
 
     _replace(ANDROID_BUILD, "com.aungmyokyaw.dhamma_echo", BUNDLE_ID)
     _replace(ANDROID_BUILD, "com.aungmyokyaw.dhammaEcho", BUNDLE_ID)
 
-    plist = IOS_PLIST.read_text()
-    plist = re.sub(
-        r'(<key>CFBundleDisplayName</key>\s*<string>)[^<]*(</string>)',
-        r'\1Dhamma Echo\2',
-        plist,
-        count=1,
-    )
-    IOS_PLIST.write_text(plist)
+    IOS_PLIST.write_text(_configure_ios_plist(IOS_PLIST.read_text()))
 
     project = IOS_PROJECT.read_text()
     project = project.replace("com.aungmyokyaw.dhamma_echo", BUNDLE_ID)
@@ -55,25 +140,58 @@ def verify_configuration() -> None:
     android_build = ANDROID_BUILD.read_text()
     plist = IOS_PLIST.read_text()
     project = IOS_PROJECT.read_text()
-    if 'android.permission.INTERNET' not in manifest or 'android:label="Dhamma Echo"' not in manifest:
-        raise ValueError('Android manifest configuration did not apply')
+    required_android = (
+        "android.permission.INTERNET",
+        "android.permission.WAKE_LOCK",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        AUDIO_SERVICE_ACTIVITY,
+        AUDIO_SERVICE,
+        MEDIA_BUTTON_RECEIVER,
+        'android:foregroundServiceType="mediaPlayback"',
+    )
+    if (
+        any(value not in manifest for value in required_android)
+        or 'android:label="Dhamma Echo"' not in manifest
+    ):
+        raise ValueError("Android background playback configuration did not apply")
     if BUNDLE_ID not in android_build:
-        raise ValueError('Android application ID configuration did not apply')
-    if '<key>CFBundleDisplayName</key>' not in plist or '<string>Dhamma Echo</string>' not in plist:
-        raise ValueError('iOS display name configuration did not apply')
+        raise ValueError("Android application ID configuration did not apply")
+    if (
+        "<key>CFBundleDisplayName</key>" not in plist
+        or "<string>Dhamma Echo</string>" not in plist
+    ):
+        raise ValueError("iOS display name configuration did not apply")
+    if (
+        "<key>UIBackgroundModes</key>" not in plist
+        or "<string>audio</string>" not in plist
+    ):
+        raise ValueError("iOS background audio configuration did not apply")
     if BUNDLE_ID not in project:
-        raise ValueError('iOS bundle identifier configuration did not apply')
+        raise ValueError("iOS bundle identifier configuration did not apply")
 
 
 def resize_icon(source: Image.Image, destination: Path, size: int) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    source.resize((size, size), Image.Resampling.LANCZOS).save(destination, format="PNG", optimize=True)
+    source.resize((size, size), Image.Resampling.LANCZOS).save(
+        destination, format="PNG", optimize=True
+    )
 
 
 def configure_android_icons(source: Image.Image) -> None:
-    sizes = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
+    sizes = {
+        "mdpi": 48,
+        "hdpi": 72,
+        "xhdpi": 96,
+        "xxhdpi": 144,
+        "xxxhdpi": 192,
+    }
     for density, size in sizes.items():
-        resize_icon(source, ROOT / f"android/app/src/main/res/mipmap-{density}/ic_launcher.png", size)
+        resize_icon(
+            source,
+            ROOT / f"android/app/src/main/res/mipmap-{density}/ic_launcher.png",
+            size,
+        )
 
 
 def configure_ios_icons(source: Image.Image) -> None:
@@ -89,7 +207,9 @@ def configure_ios_icons(source: Image.Image) -> None:
         filename = item.get("filename")
         logical_size = item.get("size")
         scale = item.get("scale")
-        if not all(isinstance(value, str) for value in (filename, logical_size, scale)):
+        if not all(
+            isinstance(value, str) for value in (filename, logical_size, scale)
+        ):
             continue
         width = float(logical_size.split("x", maxsplit=1)[0])
         multiplier = float(scale.removesuffix("x"))
@@ -100,7 +220,10 @@ def main() -> int:
     required = (ANDROID_MANIFEST, ANDROID_BUILD, IOS_PLIST, IOS_PROJECT, ICON)
     missing = [str(path.relative_to(ROOT)) for path in required if not path.exists()]
     if missing:
-        print(f"platform configuration error: missing {', '.join(missing)}", file=sys.stderr)
+        print(
+            f"platform configuration error: missing {', '.join(missing)}",
+            file=sys.stderr,
+        )
         return 1
     configure_identifiers()
     verify_configuration()

@@ -5,6 +5,7 @@ import 'package:dhamma_echo/core/text_utils.dart';
 import 'package:dhamma_echo/data/catalogue_repository.dart';
 import 'package:dhamma_echo/data/local_state_repository.dart';
 import 'package:dhamma_echo/domain/models.dart';
+import 'package:dhamma_echo/downloads/download_manager.dart';
 import 'package:dhamma_echo/player/playback_controller.dart';
 import 'package:flutter/foundation.dart';
 
@@ -13,16 +14,19 @@ class AppController extends ChangeNotifier {
     required CatalogueRepository catalogue,
     required PlaybackController playback,
     LocalStateRepository? stateRepository,
+    DownloadManager? downloadManager,
     // ignore: prefer_initializing_formals (private field, public parameter)
   }) : _catalogue = catalogue,
        playback = playback,
        // ignore: prefer_initializing_formals (private field, public parameter)
-       _stateRepository = stateRepository {
+       _stateRepository = stateRepository,
+       _downloadManager = downloadManager {
     playback.addListener(_onPlaybackChanged);
   }
 
   final CatalogueRepository _catalogue;
   final LocalStateRepository? _stateRepository;
+  final DownloadManager? _downloadManager;
   final PlaybackController playback;
   int _seenCompletionEpoch = 0;
   int? _seenTrackId;
@@ -42,6 +46,7 @@ class AppController extends ChangeNotifier {
   List<TeacherSummary> teacherResults = const <TeacherSummary>[];
   List<AudioTrack> recentTracks = const <AudioTrack>[];
   List<AudioTrack> favoriteTracks = const <AudioTrack>[];
+  List<AudioTrack> downloadedTracks = const <AudioTrack>[];
 
   AudioSearchRequest audioRequest = const AudioSearchRequest(limit: 50);
   AudioSearchPage audioPage = const AudioSearchPage(
@@ -78,6 +83,12 @@ class AppController extends ChangeNotifier {
   List<TeacherSummary> get orderedTeachers =>
       orderTeachersFeaturedFirst(teachers);
   List<TeacherSummary> get homeFeaturedTeachers => featuredTeachers(teachers);
+  DownloadManager? get downloadManager => _downloadManager;
+
+  bool isDownloaded(int id) => _downloadManager?.isDownloaded(id) ?? false;
+  bool isDownloading(int id) => _downloadManager?.isDownloading(id) ?? false;
+  double? downloadProgress(int id) => _downloadManager?.progressFor(id);
+  String downloadError(int id) => _downloadManager?.errorFor(id) ?? '';
 
   Future<void> initialize({PersistedState? persistedState}) async {
     initializing = true;
@@ -90,6 +101,7 @@ class AppController extends ChangeNotifier {
           const PersistedState.defaults();
       library = state.library;
       settings = state.settings;
+      await _downloadManager?.initialize();
       await playback.setVolume(settings.volume);
       await playback.setRate(settings.playbackRate);
       final values = await Future.wait<Object>(<Future<Object>>[
@@ -105,6 +117,7 @@ class AppController extends ChangeNotifier {
         searchAudio(),
         searchCollections(),
         _loadLibraryTracks(),
+        _loadDownloadedTracks(),
       ]);
     } on Object catch (error) {
       initializationError = _message(error);
@@ -305,6 +318,7 @@ class AppController extends ChangeNotifier {
     final didPlay = await playback.play(
       track,
       resumeAt: library.resume[track.id] ?? 0,
+      preferredUri: _downloadManager?.localUriFor(track.id),
     );
     if (!didPlay) return false;
     if (previous?.id == track.id) {
@@ -325,11 +339,34 @@ class AppController extends ChangeNotifier {
     }
     final didPlay = await playback.playNext(
       resumeAt: library.resume[next.id] ?? 0,
+      preferredUri: _downloadManager?.localUriFor(next.id),
     );
     if (didPlay) {
       await _persist();
     }
     return didPlay;
+  }
+
+  Future<bool> downloadTrack(AudioTrack track) async {
+    final manager = _downloadManager;
+    if (manager == null) return false;
+    final downloaded = await manager.download(track);
+    if (downloaded) {
+      await _loadDownloadedTracks();
+      notifyListeners();
+    }
+    return downloaded;
+  }
+
+  Future<bool> removeDownload(int id) async {
+    final manager = _downloadManager;
+    if (manager == null) return false;
+    final removed = await manager.delete(id);
+    if (removed) {
+      await _loadDownloadedTracks();
+      notifyListeners();
+    }
+    return removed;
   }
 
   Future<void> toggleFavorite(int id) async {
@@ -410,6 +447,15 @@ class AppController extends ChangeNotifier {
     unawaited(_loadRecentTracks());
   }
 
+  Future<void> _loadDownloadedTracks() async {
+    final manager = _downloadManager;
+    if (manager == null) {
+      downloadedTracks = const <AudioTrack>[];
+      return;
+    }
+    downloadedTracks = await _resolveTracks(manager.downloadedIds);
+  }
+
   Future<void> _loadLibraryTracks() async {
     await Future.wait<void>(<Future<void>>[
       _loadRecentTracks(),
@@ -473,7 +519,6 @@ class AppController extends ChangeNotifier {
     }
 
     _wasPlaying = playback.playing;
-    notifyListeners();
   }
 
   String _message(Object error) {
@@ -484,6 +529,7 @@ class AppController extends ChangeNotifier {
   @override
   void dispose() {
     playback.removeListener(_onPlaybackChanged);
+    _downloadManager?.dispose();
     playback.dispose();
     super.dispose();
   }

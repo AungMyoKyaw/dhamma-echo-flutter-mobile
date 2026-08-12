@@ -16,12 +16,33 @@ class TrackTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) => AnimatedBuilder(
+        animation: controller.playback.controls,
+        builder: (context, _) {
+          final manager = controller.downloadManager;
+          if (manager == null) return _buildTile(context);
+          return AnimatedBuilder(
+            animation: manager,
+            builder: (context, _) => _buildTile(context),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTile(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isCurrent = controller.playback.current?.id == track.id;
+    final isDownloaded = controller.isDownloaded(track.id);
+    final isDownloading = controller.isDownloading(track.id);
+    final progress = controller.downloadProgress(track.id);
+
     return ListTile(
       tileColor: isCurrent ? colors.primary.withValues(alpha: 0.06) : null,
       shape: Border(bottom: BorderSide(color: colors.outlineVariant)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       leading: IconButton.filledTonal(
         tooltip: track.playable
             ? 'Play ${track.title}'
@@ -45,6 +66,34 @@ class TrackTile extends StatelessWidget {
       trailing: Wrap(
         spacing: 0,
         children: <Widget>[
+          if (controller.downloadManager != null)
+            IconButton(
+              tooltip: isDownloading
+                  ? 'Downloading'
+                  : isDownloaded
+                  ? 'Remove download'
+                  : track.playable
+                  ? 'Download for offline listening'
+                  : 'Download unavailable',
+              onPressed: isDownloading || !track.playable
+                  ? null
+                  : () => _toggleDownload(context, isDownloaded),
+              icon: isDownloading
+                  ? SizedBox.square(
+                      dimension: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        value: progress != null && progress > 0
+                            ? progress
+                            : null,
+                      ),
+                    )
+                  : Icon(
+                      isDownloaded
+                          ? Icons.download_done_rounded
+                          : Icons.download_rounded,
+                    ),
+            ),
           IconButton(
             tooltip: controller.isFavorite(track.id)
                 ? 'Remove from favorites'
@@ -65,6 +114,21 @@ class TrackTile extends StatelessWidget {
               icon: const Icon(Icons.playlist_add),
             ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _toggleDownload(BuildContext context, bool isDownloaded) async {
+    final succeeded = isDownloaded
+        ? await controller.removeDownload(track.id)
+        : await controller.downloadTrack(track);
+    if (!context.mounted || succeeded) return;
+    final message = controller.downloadError(track.id);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message.isEmpty ? 'Could not update this download.' : message,
+        ),
       ),
     );
   }

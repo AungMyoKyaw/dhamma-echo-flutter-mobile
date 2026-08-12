@@ -1,10 +1,17 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:dhamma_echo/app/app_controller.dart';
 import 'package:dhamma_echo/data/catalogue_repository.dart';
 import 'package:dhamma_echo/domain/models.dart';
+import 'package:dhamma_echo/downloads/download_client.dart';
+import 'package:dhamma_echo/downloads/download_manager.dart';
 import 'package:dhamma_echo/player/playback_controller.dart';
 import 'package:dhamma_echo/player/playback_port.dart';
+import 'package:dhamma_echo/ui/components/track_tile.dart';
 import 'package:dhamma_echo/ui/screens/collection_detail_screen.dart';
 import 'package:dhamma_echo/ui/screens/settings_screen.dart';
+import 'package:dhamma_echo/ui/screens/teacher_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -27,6 +34,115 @@ void main() {
     await tester.pump();
 
     expect(find.text('50%'), findsOneWidget);
+    expect(find.textContaining('keeps downloads'), findsOneWidget);
+  });
+
+  testWidgets('active mini player persists on collection detail without refetching', (
+    tester,
+  ) async {
+    final catalogue = DetailCatalogue();
+    final port = DetailPlaybackPort();
+    final controller = AppController(
+      catalogue: catalogue,
+      playback: PlaybackController(port),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await controller.play(DetailCatalogue.track);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CollectionDetailScreen(
+          controller: controller,
+          collection: DetailCatalogue.collection,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('mini-player')), findsOneWidget);
+    expect(catalogue.collectionDetailCalls, 1);
+    expect(find.text('Collection Seven'), findsOneWidget);
+
+    port.emit(const PlaybackPositionEvent(Duration(seconds: 5)));
+    await tester.pump();
+
+    expect(catalogue.collectionDetailCalls, 1);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('Collection Seven'), findsOneWidget);
+  });
+
+  testWidgets('active mini player persists on teacher detail', (tester) async {
+    final catalogue = DetailCatalogue();
+    final port = DetailPlaybackPort();
+    final controller = AppController(
+      catalogue: catalogue,
+      playback: PlaybackController(port),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await controller.play(DetailCatalogue.track);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TeacherDetailScreen(
+          controller: controller,
+          teacher: const TeacherSummary(
+            id: 16,
+            name: 'Teacher',
+            audioCount: 1,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('mini-player')), findsOneWidget);
+    expect(find.text('Teacher'), findsWidgets);
+
+    port.emit(const PlaybackPositionEvent(Duration(seconds: 5)));
+    await tester.pump();
+    expect(find.text('Teacher'), findsWidgets);
+  });
+
+  testWidgets('track row downloads and removes offline media', (tester) async {
+    final directory = await Directory.systemTemp.createTemp('dhamma-ui-download-');
+    addTearDown(() async {
+      if (await directory.exists()) await directory.delete(recursive: true);
+    });
+    final controller = AppController(
+      catalogue: DetailCatalogue(),
+      playback: PlaybackController(DetailPlaybackPort()),
+      downloadManager: DownloadManager(
+        directory: directory,
+        client: DetailDownloadClient(),
+      ),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TrackTile(
+            controller: controller,
+            track: DetailCatalogue.track,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byIcon(Icons.download_rounded), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.download_rounded));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.download_done_rounded), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.download_done_rounded));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.download_rounded), findsOneWidget);
   });
 
   testWidgets('collection Explore filter returns to the root Explore surface', (
@@ -71,6 +187,7 @@ void main() {
 }
 
 class DetailCatalogue implements CatalogueRepository {
+  int collectionDetailCalls = 0;
   static const collection = CollectionSummary(
     id: 7,
     name: 'Collection Seven',
@@ -143,6 +260,7 @@ class DetailCatalogue implements CatalogueRepository {
 
   @override
   Future<CollectionDetail> getCollection(int id) async {
+    collectionDetailCalls += 1;
     return const CollectionDetail(
       id: 7,
       name: 'Collection Seven',
@@ -167,16 +285,34 @@ class DetailCatalogue implements CatalogueRepository {
   Future<AudioTrack> getAudioTrack(int id) async => track;
 }
 
+class DetailDownloadClient implements DownloadClient {
+  @override
+  Future<DownloadResponse> get(Uri uri) async {
+    return DownloadResponse(
+      statusCode: HttpStatus.ok,
+      contentLength: 3,
+      bytes: Stream<List<int>>.value(<int>[1, 2, 3]),
+    );
+  }
+
+  @override
+  void close() {}
+}
+
 class DetailPlaybackPort implements PlaybackPort {
-  @override
-  Stream<PlaybackPortEvent> get events =>
-      const Stream<PlaybackPortEvent>.empty();
+  final StreamController<PlaybackPortEvent> _events =
+      StreamController<PlaybackPortEvent>.broadcast();
+
+  void emit(PlaybackPortEvent event) => _events.add(event);
 
   @override
-  Future<void> dispose() async {}
+  Stream<PlaybackPortEvent> get events => _events.stream;
 
   @override
-  Future<void> load(Uri uri) async {}
+  Future<void> dispose() => _events.close();
+
+  @override
+  Future<void> load(AudioTrack track, Uri uri) async {}
 
   @override
   Future<void> pause() async {}

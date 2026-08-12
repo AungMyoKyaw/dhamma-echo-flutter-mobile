@@ -4,6 +4,7 @@ import 'package:dhamma_echo/app/app_controller.dart';
 import 'package:dhamma_echo/domain/models.dart';
 import 'package:dhamma_echo/ui/components/async_message.dart';
 import 'package:dhamma_echo/ui/components/collection_card.dart';
+import 'package:dhamma_echo/ui/components/mini_player.dart';
 import 'package:dhamma_echo/ui/components/track_tile.dart';
 import 'package:dhamma_echo/ui/screens/collection_detail_screen.dart';
 import 'package:flutter/material.dart';
@@ -71,11 +72,10 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: widget.controller,
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(title: const Text('Teacher')),
-        body: FutureBuilder<TeacherDetail>(
+    return Scaffold(
+      appBar: AppBar(title: const Text('Teacher')),
+      bottomNavigationBar: MiniPlayer(controller: widget.controller),
+      body: FutureBuilder<TeacherDetail>(
           future: _detail,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
@@ -212,8 +212,7 @@ class _TeacherDetailScreenState extends State<TeacherDetailScreen> {
                 ],
               ],
             );
-          },
-        ),
+        },
       ),
     );
   }

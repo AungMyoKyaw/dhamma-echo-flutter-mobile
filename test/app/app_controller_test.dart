@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dhamma_echo/app/app_controller.dart';
 import 'package:dhamma_echo/data/catalogue_repository.dart';
 import 'package:dhamma_echo/domain/models.dart';
+import 'package:dhamma_echo/downloads/download_client.dart';
+import 'package:dhamma_echo/downloads/download_manager.dart';
 import 'package:dhamma_echo/player/playback_controller.dart';
 import 'package:dhamma_echo/player/playback_port.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -151,6 +154,56 @@ void main() {
     },
   );
 
+  test('playback position ticks do not notify app-wide listeners', () async {
+    final port = RecordingPlaybackPort();
+    final controller = AppController(
+      catalogue: RecordingCatalogue(),
+      playback: PlaybackController(port),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await controller.play(trackOne);
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+    var notifications = 0;
+    controller.addListener(() => notifications += 1);
+
+    port.emit(const PlaybackPositionEvent(Duration(seconds: 1)));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(notifications, 0);
+    expect(controller.playback.position, const Duration(seconds: 1));
+  });
+
+  test('downloaded media is resolved and preferred for playback', () async {
+    final directory = await Directory.systemTemp.createTemp('dhamma-app-');
+    addTearDown(() async {
+      if (await directory.exists()) await directory.delete(recursive: true);
+    });
+    await File('${directory.path}/${trackOne.id}.mp3').writeAsBytes(<int>[1]);
+    final port = RecordingPlaybackPort();
+    final controller = AppController(
+      catalogue: RecordingCatalogue(),
+      playback: PlaybackController(port),
+      downloadManager: DownloadManager(
+        directory: directory,
+        client: NoNetworkDownloadClient(),
+      ),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    expect(controller.downloadedTracks.map((track) => track.id), <int>[1]);
+
+    expect(await controller.play(trackOne), isTrue);
+    expect(port.urls.first.scheme, 'file');
+  });
+
   test(
     'completed playback resets the stored resume position to zero',
     () async {
@@ -291,6 +344,7 @@ class RecordingPlaybackPort implements PlaybackPort {
       StreamController<PlaybackPortEvent>.broadcast();
 
   Duration? lastSeek;
+  final List<Uri> urls = <Uri>[];
 
   void emit(PlaybackPortEvent event) => _events.add(event);
 
@@ -301,7 +355,9 @@ class RecordingPlaybackPort implements PlaybackPort {
   Future<void> dispose() => _events.close();
 
   @override
-  Future<void> load(Uri uri) async {}
+  Future<void> load(AudioTrack track, Uri uri) async {
+    urls.add(uri);
+  }
 
   @override
   Future<void> pause() async {}
@@ -319,4 +375,15 @@ class RecordingPlaybackPort implements PlaybackPort {
 
   @override
   Future<void> setVolume(double value) async {}
+}
+
+
+class NoNetworkDownloadClient implements DownloadClient {
+  @override
+  Future<DownloadResponse> get(Uri uri) {
+    throw StateError('network should not be used');
+  }
+
+  @override
+  void close() {}
 }

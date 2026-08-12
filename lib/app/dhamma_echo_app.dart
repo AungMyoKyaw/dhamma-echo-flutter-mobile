@@ -199,7 +199,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
           bottomNavigationBar: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              MiniPlayer(controller: controller),
+              MiniPlayer(controller: controller, safeBottom: false),
               NavigationBar(
                 selectedIndex: controller.selectedTab,
                 onDestinationSelected: controller.selectTab,

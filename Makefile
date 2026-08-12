@@ -2,7 +2,7 @@ FLUTTER ?= flutter
 DART ?= dart
 PYTHON ?= python3
 
-.PHONY: bootstrap catalogue verify-catalogue deps format format-check lint typecheck test check-tests coverage build-android build-ios clean verify repository-check
+.PHONY: bootstrap catalogue verify-catalogue deps format format-check lint typecheck test check-tests coverage platform-config-test build-android build-ios clean verify repository-check
 
 bootstrap:
 	bash tool/bootstrap_platforms.sh
@@ -40,13 +40,16 @@ coverage:
 repository-check:
 	$(PYTHON) tool/repository_check.py
 
+platform-config-test:
+	$(PYTHON) tool/test_configure_platforms.py
+
 build-android: verify-catalogue
 	$(FLUTTER) build apk --release --split-per-abi
 
 build-ios: verify-catalogue
 	$(FLUTTER) build ios --release --no-codesign
 
-verify: verify-catalogue repository-check format-check lint check-tests coverage
+verify: verify-catalogue repository-check platform-config-test format-check lint check-tests coverage
 
 clean:
 	$(FLUTTER) clean

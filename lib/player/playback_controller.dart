@@ -24,6 +24,8 @@ class PlaybackController extends ChangeNotifier {
   double _volume = 0.8;
   double _rate = 1;
   int _completionEpoch = 0;
+  int _playGeneration = 0;
+  final ValueNotifier<int> _controls = ValueNotifier<int>(0);
 
   AudioTrack? get current => _current;
   List<AudioTrack> get queue => List<AudioTrack>.unmodifiable(_queue);
@@ -36,58 +38,92 @@ class PlaybackController extends ChangeNotifier {
   double get volume => _volume;
   double get rate => _rate;
   int get completionEpoch => _completionEpoch;
+  ValueListenable<int> get controls => _controls;
 
-  Future<bool> play(AudioTrack track, {double resumeAt = 0}) async {
-    final candidates = mediaUrlCandidates(track.url, track.format);
-    if (!track.playable || candidates.isEmpty) {
+  Future<bool> play(
+    AudioTrack track, {
+    double resumeAt = 0,
+    Uri? preferredUri,
+  }) async {
+    final remoteCandidates = mediaUrlCandidates(track.url, track.format);
+    if (!track.playable || remoteCandidates.isEmpty) {
       _error = track.format.toLowerCase() == 'mp3'
           ? 'This audio source is not trusted.'
           : 'This audio format is not supported by the mobile player.';
-      notifyListeners();
+      _notify(controls: true);
       return false;
     }
+
+    final generation = ++_playGeneration;
+    final candidates = <Uri>[
+      if (preferredUri != null && preferredUri.scheme == 'file') preferredUri,
+      ...remoteCandidates,
+    ];
     _loading = true;
     _error = '';
-    notifyListeners();
+    _notify(controls: true);
+
     for (final candidate in candidates) {
       try {
-        await _port.load(candidate);
+        await _port.load(track, candidate);
         await _port.setVolume(_volume);
         await _port.setSpeed(_rate);
-        if (resumeAt.isFinite && resumeAt > 0) {
-          await _port.seek(Duration(milliseconds: (resumeAt * 1000).round()));
-        }
-        await _port.play();
-        _current = track;
-        _position = resumeAt.isFinite && resumeAt > 0
+        final resumePosition = resumeAt.isFinite && resumeAt > 0
             ? Duration(milliseconds: (resumeAt * 1000).round())
             : Duration.zero;
+        if (resumePosition > Duration.zero) {
+          await _port.seek(resumePosition);
+        }
+
+        _current = track;
+        _position = resumePosition;
         _duration = Duration.zero;
         _loading = false;
         _playing = true;
-        notifyListeners();
+        _notify(controls: true);
+        unawaited(_startPlayback(generation));
         return true;
       } on Object {
-        // The only allowed fallback is the alternate approved hostname.
+        // Local media may disappear and approved hosts may be temporarily
+        // unavailable. Only the explicitly constructed candidates are tried.
       }
     }
+
+    if (generation != _playGeneration) return false;
     _loading = false;
     _playing = false;
     _error = 'The audio stream is unavailable from Dhamma Download.';
-    notifyListeners();
+    _notify(controls: true);
     return false;
+  }
+
+  Future<void> _startPlayback(int generation) async {
+    try {
+      await _port.play();
+    } on Object {
+      if (generation != _playGeneration) return;
+      _playing = false;
+      _loading = false;
+      _error = 'Audio playback failed.';
+      _notify(controls: true);
+    }
   }
 
   Future<void> toggle() async {
     if (_current == null) return;
     if (_playing) {
+      ++_playGeneration;
       await _port.pause();
       _playing = false;
-    } else {
-      await _port.play();
-      _playing = true;
+      _notify(controls: true);
+      return;
     }
-    notifyListeners();
+
+    final generation = ++_playGeneration;
+    _error = '';
+    _playing = true;
+    _notify(controls: true);
+    unawaited(_startPlayback(generation));
   }
 
   Future<void> seek(Duration value) async {
@@ -136,10 +172,14 @@ class PlaybackController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> playNext({double resumeAt = 0}) async {
+  Future<bool> playNext({double resumeAt = 0, Uri? preferredUri}) async {
     if (_queue.isEmpty) return false;
     final next = _queue.first;
-    final didPlay = await play(next, resumeAt: resumeAt);
+    final didPlay = await play(
+      next,
+      resumeAt: resumeAt,
+      preferredUri: preferredUri,
+    );
     if (didPlay && _queue.isNotEmpty && _queue.first.id == next.id) {
       _queue.removeAt(0);
       notifyListeners();
@@ -152,6 +192,8 @@ class PlaybackController extends ChangeNotifier {
       case PlaybackStateEvent(:final playing, :final loading):
         _playing = playing;
         _loading = loading;
+        _notify(controls: true);
+        return;
       case PlaybackPositionEvent(:final position):
         _position = position;
       case PlaybackDurationEvent(:final duration):
@@ -160,19 +202,29 @@ class PlaybackController extends ChangeNotifier {
         _playing = false;
         _position = Duration.zero;
         _completionEpoch += 1;
-        notifyListeners();
+        _notify(controls: true);
         return;
       case PlaybackErrorEvent(:final message):
         _error = message;
+        _playing = false;
         _loading = false;
+        _notify(controls: true);
+        return;
     }
+    notifyListeners();
+  }
+
+  void _notify({bool controls = false}) {
+    if (controls) _controls.value += 1;
     notifyListeners();
   }
 
   @override
   void dispose() {
+    ++_playGeneration;
     unawaited(_subscription.cancel());
     unawaited(_port.dispose());
+    _controls.dispose();
     super.dispose();
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dhamma_echo/domain/models.dart';
 import 'package:dhamma_echo/player/playback_controller.dart';
 import 'package:dhamma_echo/player/playback_port.dart';
@@ -7,7 +9,9 @@ void main() {
   test('play rejects unplayable tracks before reaching the port', () async {
     final port = FakePlaybackPort();
     final controller = PlaybackController(port);
+    addTearDown(controller.dispose);
     final track = fixtureTrack(playable: false, format: 'wma');
+
     expect(await controller.play(track), isFalse);
     expect(port.urls, isEmpty);
     expect(controller.error, contains('not supported'));
@@ -18,9 +22,12 @@ void main() {
     () async {
       final port = FakePlaybackPort(failuresBeforeSuccess: 1);
       final controller = PlaybackController(port);
+      addTearDown(controller.dispose);
       await controller.setVolume(0.4);
       await controller.setRate(1.5);
+
       final result = await controller.play(fixtureTrack(), resumeAt: 42);
+
       expect(result, isTrue);
       expect(port.urls, hasLength(2));
       expect(port.lastSeek, const Duration(seconds: 42));
@@ -30,11 +37,65 @@ void main() {
     },
   );
 
+  test('play exposes current state before port play future completes', () async {
+    final pendingPlay = Completer<void>();
+    final port = FakePlaybackPort(playCompleter: pendingPlay);
+    final controller = PlaybackController(port);
+    addTearDown(controller.dispose);
+    final track = fixtureTrack();
+
+    final resultFuture = controller.play(track);
+    await Future<void>.delayed(Duration.zero);
+    final currentIdBeforePortCompletes = controller.current?.id;
+    final playingBeforePortCompletes = controller.playing;
+
+    pendingPlay.complete();
+    expect(await resultFuture, isTrue);
+    expect(currentIdBeforePortCompletes, track.id);
+    expect(playingBeforePortCompletes, isTrue);
+  });
+
+  test('toggle resumes without waiting for port play lifetime', () async {
+    final port = FakePlaybackPort();
+    final controller = PlaybackController(port);
+    addTearDown(controller.dispose);
+    await controller.play(fixtureTrack());
+    await controller.toggle();
+    expect(controller.playing, isFalse);
+
+    final pendingResume = Completer<void>();
+    port.playCompleter = pendingResume;
+    final toggleFuture = controller.toggle();
+    await Future<void>.delayed(Duration.zero);
+    final playingBeforePortCompletes = controller.playing;
+
+    pendingResume.complete();
+    await toggleFuture;
+    expect(playingBeforePortCompletes, isTrue);
+  });
+
+  test('preferred local uri is attempted before trusted remote fallback', () async {
+    final port = FakePlaybackPort(failuresBeforeSuccess: 1);
+    final controller = PlaybackController(port);
+    addTearDown(controller.dispose);
+    final localUri = Uri.file('/tmp/dhamma-echo/1.mp3');
+
+    expect(
+      await controller.play(fixtureTrack(), preferredUri: localUri),
+      isTrue,
+    );
+    expect(port.urls.first, localUri);
+    expect(port.urls[1].scheme, 'https');
+    expect(port.urls[1].host, 'www.dhammadownload.com');
+  });
+
   test('queue remains unique and next advances predictably', () async {
     final port = FakePlaybackPort();
     final controller = PlaybackController(port);
+    addTearDown(controller.dispose);
     final one = fixtureTrack(id: 1);
     final two = fixtureTrack(id: 2);
+
     controller.enqueue(two);
     controller.enqueue(two);
     expect(controller.queue.map((track) => track.id), [2]);
@@ -63,10 +124,12 @@ AudioTrack fixtureTrack({
 }
 
 class FakePlaybackPort implements PlaybackPort {
-  FakePlaybackPort({this.failuresBeforeSuccess = 0});
+  FakePlaybackPort({this.failuresBeforeSuccess = 0, this.playCompleter});
 
   final int failuresBeforeSuccess;
+  Completer<void>? playCompleter;
   final List<Uri> urls = <Uri>[];
+  final List<AudioTrack> loadedTracks = <AudioTrack>[];
   Duration? lastSeek;
   double volume = 0.8;
   double speed = 1;
@@ -80,7 +143,8 @@ class FakePlaybackPort implements PlaybackPort {
   Future<void> dispose() async {}
 
   @override
-  Future<void> load(Uri uri) async {
+  Future<void> load(AudioTrack track, Uri uri) async {
+    loadedTracks.add(track);
     urls.add(uri);
     attempts += 1;
     if (attempts <= failuresBeforeSuccess) {
@@ -92,7 +156,7 @@ class FakePlaybackPort implements PlaybackPort {
   Future<void> pause() async {}
 
   @override
-  Future<void> play() async {}
+  Future<void> play() => playCompleter?.future ?? Future<void>.value();
 
   @override
   Future<void> seek(Duration position) async {

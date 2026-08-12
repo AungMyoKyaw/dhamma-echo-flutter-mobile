@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:dhamma_echo/domain/models.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 sealed class PlaybackPortEvent {
   const PlaybackPortEvent();
@@ -33,7 +35,7 @@ class PlaybackErrorEvent extends PlaybackPortEvent {
 
 abstract interface class PlaybackPort {
   Stream<PlaybackPortEvent> get events;
-  Future<void> load(Uri uri);
+  Future<void> load(AudioTrack track, Uri uri);
   Future<void> play();
   Future<void> pause();
   Future<void> seek(Duration position);
@@ -89,8 +91,18 @@ class JustAudioPlaybackPort implements PlaybackPort {
   Stream<PlaybackPortEvent> get events => _events.stream;
 
   @override
-  Future<void> load(Uri uri) async {
-    await _player.setUrl(uri.toString());
+  Future<void> load(AudioTrack track, Uri uri) async {
+    await _player.setAudioSource(
+      AudioSource.uri(
+        uri,
+        tag: MediaItem(
+          id: 'dhamma-echo-${track.id}',
+          album: 'Dhamma Echo',
+          title: track.title,
+          artist: track.teacherName,
+        ),
+      ),
+    );
   }
 
   @override

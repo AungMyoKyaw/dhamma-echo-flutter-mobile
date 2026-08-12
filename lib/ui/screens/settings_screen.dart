@@ -1,4 +1,5 @@
 import 'package:dhamma_echo/app/app_controller.dart';
+import 'package:dhamma_echo/ui/components/mini_player.dart';
 import 'package:flutter/material.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -14,6 +15,7 @@ class SettingsScreen extends StatelessWidget {
       builder: (context, _) {
         return Scaffold(
           appBar: AppBar(title: const Text('Settings')),
+          bottomNavigationBar: MiniPlayer(controller: controller),
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: <Widget>[
@@ -68,7 +70,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Dhamma Echo uses a light-only interface and keeps favorites, history, resume positions, and settings on this device.',
+                'Dhamma Echo uses a light-only interface and keeps downloads, favorites, history, resume positions, and settings on this device.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],

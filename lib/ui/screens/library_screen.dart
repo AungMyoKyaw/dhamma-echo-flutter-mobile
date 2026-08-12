@@ -11,6 +11,7 @@ class LibraryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final favorites = controller.favoriteTracks;
     final recent = controller.recentTracks;
+    final downloads = controller.downloadedTracks;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: <Widget>[
@@ -41,6 +42,33 @@ class LibraryScreen extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: favorites
+                  .map(
+                    (track) => TrackTile(controller: controller, track: track),
+                  )
+                  .toList(growable: false),
+            ),
+          ),
+        const SizedBox(height: 24),
+        Text(
+          'Downloads',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        if (downloads.isEmpty)
+          const Card(
+            child: AsyncMessage(
+              icon: Icons.download_for_offline_outlined,
+              title: 'No downloads yet',
+              message: 'Download a playable MP3 to listen without a network connection.',
+            ),
+          )
+        else
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: downloads
                   .map(
                     (track) => TrackTile(controller: controller, track: track),
                   )
