@@ -132,14 +132,17 @@ void main() {
       ),
     );
 
-    expect(find.byIcon(Icons.download_rounded), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.download_rounded));
+    await tester.tap(find.byTooltip('More actions for Talk'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.download_done_rounded), findsOneWidget);
+    await tester.tap(find.text('Download for offline listening'));
+    await _pumpUntil(tester, () => controller.isDownloaded(1));
+    expect(controller.isDownloaded(1), isTrue);
 
-    await tester.tap(find.byIcon(Icons.download_done_rounded));
+    await tester.tap(find.byTooltip('More actions for Talk'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.download_rounded), findsOneWidget);
+    await tester.tap(find.text('Remove download'));
+    await _pumpUntil(tester, () => !controller.isDownloaded(1));
+    expect(controller.isDownloaded(1), isFalse);
   });
 
   testWidgets('tapping a playable track row starts playback', (tester) async {
@@ -164,6 +167,88 @@ void main() {
 
     expect(controller.playback.current, DetailCatalogue.track);
     expect(controller.playback.playing, isTrue);
+  });
+
+  testWidgets('current track leading action pauses without reloading', (
+    tester,
+  ) async {
+    final port = DetailPlaybackPort();
+    final controller = AppController(
+      catalogue: DetailCatalogue(),
+      playback: PlaybackController(port),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await controller.play(DetailCatalogue.track);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TrackTile(controller: controller, track: DetailCatalogue.track),
+        ),
+      ),
+    );
+
+    expect(port.loadCalls, 1);
+    await tester.tap(find.byTooltip('Pause Talk'));
+    await tester.pump();
+
+    expect(port.loadCalls, 1);
+    expect(port.pauseCalls, 1);
+    expect(controller.playback.playing, isFalse);
+  });
+
+  testWidgets('track row keeps actions accessible at compact phone width', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final semantics = tester.ensureSemantics();
+    addTearDown(semantics.dispose);
+    final directory = await Directory.systemTemp.createTemp(
+      'dhamma-ui-accessibility-',
+    );
+    addTearDown(() async {
+      if (await directory.exists()) await directory.delete(recursive: true);
+    });
+    final controller = AppController(
+      catalogue: DetailCatalogue(),
+      playback: PlaybackController(DetailPlaybackPort()),
+      downloadManager: DownloadManager(
+        directory: directory,
+        client: DetailDownloadClient(),
+      ),
+    );
+    addTearDown(controller.dispose);
+    await controller.initialize(
+      persistedState: const PersistedState.defaults(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildDhammaEchoTheme(),
+        home: Scaffold(
+          body: TrackTile(controller: controller, track: DetailCatalogue.track),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byTooltip('Play Talk'), findsOneWidget);
+    expect(find.byTooltip('More actions for Talk'), findsOneWidget);
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+
+    await tester.tap(find.byTooltip('More actions for Talk'));
+    await tester.pumpAndSettle();
+    expect(find.text('Download for offline listening'), findsOneWidget);
+    expect(find.text('Add to favorites'), findsOneWidget);
+    expect(find.text('Add to queue'), findsOneWidget);
   });
 
   testWidgets('active track row uses the shared sage selected surface', (
@@ -230,6 +315,18 @@ void main() {
     expect(controller.selectedTab, 1);
     expect(controller.audioRequest.collectionId, DetailCatalogue.collection.id);
   });
+}
+
+Future<void> _pumpUntil(
+  WidgetTester tester,
+  bool Function() predicate, {
+  int maxPumps = 100,
+}) async {
+  for (var pump = 0; pump < maxPumps && !predicate(); pump += 1) {
+    await tester.pump(const Duration(milliseconds: 10));
+  }
+  expect(predicate(), isTrue, reason: 'condition did not complete in time');
+  await tester.pump();
 }
 
 class DetailCatalogue implements CatalogueRepository {
@@ -348,6 +445,8 @@ class DetailDownloadClient implements DownloadClient {
 class DetailPlaybackPort implements PlaybackPort {
   final StreamController<PlaybackPortEvent> _events =
       StreamController<PlaybackPortEvent>.broadcast();
+  int loadCalls = 0;
+  int pauseCalls = 0;
 
   void emit(PlaybackPortEvent event) => _events.add(event);
 
@@ -358,10 +457,14 @@ class DetailPlaybackPort implements PlaybackPort {
   Future<void> dispose() => _events.close();
 
   @override
-  Future<void> load(AudioTrack track, Uri uri) async {}
+  Future<void> load(AudioTrack track, Uri uri) async {
+    loadCalls += 1;
+  }
 
   @override
-  Future<void> pause() async {}
+  Future<void> pause() async {
+    pauseCalls += 1;
+  }
 
   @override
   Future<void> play() async {}

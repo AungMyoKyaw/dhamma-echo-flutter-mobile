@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:dhamma_echo/app/app_controller.dart';
 import 'package:dhamma_echo/domain/models.dart';
 import 'package:flutter/material.dart';
+
+enum _TrackAction { download, favorite, queue }
 
 class TrackTile extends StatelessWidget {
   const TrackTile({
@@ -34,28 +38,36 @@ class TrackTile extends StatelessWidget {
 
   Widget _buildTile(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isCurrent = controller.playback.current?.id == track.id;
+    final playback = controller.playback;
+    final isCurrent = playback.current?.id == track.id;
+    final isPlaying = isCurrent && playback.playing;
+    final isLoading = isCurrent && playback.loading;
     final isDownloaded = controller.isDownloaded(track.id);
     final isDownloading = controller.isDownloading(track.id);
     final progress = controller.downloadProgress(track.id);
 
     return ListTile(
-      onTap: track.playable && !(isCurrent && controller.playback.playing)
-          ? () => controller.play(track)
+      onTap: track.playable && !isLoading
+          ? () => unawaited(_activateTrack())
           : null,
       tileColor: isCurrent ? colors.primaryContainer : null,
       shape: Border(bottom: BorderSide(color: colors.outlineVariant)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       leading: IconButton.filledTonal(
-        tooltip: track.playable
-            ? 'Play ${track.title}'
-            : '${track.format.toUpperCase()} is unavailable',
-        onPressed: track.playable ? () => controller.play(track) : null,
-        icon: Icon(
-          isCurrent && controller.playback.playing
-              ? Icons.equalizer
-              : Icons.play_arrow_rounded,
+        tooltip: _playbackTooltip(
+          isCurrent: isCurrent,
+          isPlaying: isPlaying,
+          isLoading: isLoading,
         ),
+        onPressed: track.playable && !isLoading
+            ? () => unawaited(_activateTrack())
+            : null,
+        icon: isLoading
+            ? const SizedBox.square(
+                dimension: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
       ),
       title: Text(track.title, maxLines: 2, overflow: TextOverflow.ellipsis),
       subtitle: Text(
@@ -66,59 +78,115 @@ class TrackTile extends StatelessWidget {
           context,
         ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
       ),
-      trailing: Wrap(
-        spacing: 0,
-        children: <Widget>[
+      trailing: PopupMenuButton<_TrackAction>(
+        tooltip: 'More actions for ${track.title}',
+        onSelected: (action) {
+          unawaited(_handleAction(context, action, isDownloaded));
+        },
+        itemBuilder: (context) => <PopupMenuEntry<_TrackAction>>[
           if (controller.downloadManager != null)
-            IconButton(
-              tooltip: isDownloading
-                  ? 'Downloading'
-                  : isDownloaded
-                  ? 'Remove download'
-                  : track.playable
-                  ? 'Download for offline listening'
-                  : 'Download unavailable',
-              onPressed: isDownloading || !track.playable
-                  ? null
-                  : () => _toggleDownload(context, isDownloaded),
-              icon: isDownloading
-                  ? SizedBox.square(
-                      dimension: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        value: progress != null && progress > 0
-                            ? progress
-                            : null,
+            PopupMenuItem<_TrackAction>(
+              value: _TrackAction.download,
+              enabled: !isDownloading && (isDownloaded || track.playable),
+              child: _menuItem(
+                icon: isDownloading
+                    ? SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          value: progress != null && progress > 0
+                              ? progress
+                              : null,
+                        ),
+                      )
+                    : Icon(
+                        isDownloaded
+                            ? Icons.download_done_rounded
+                            : Icons.download_rounded,
                       ),
-                    )
-                  : Icon(
-                      isDownloaded
-                          ? Icons.download_done_rounded
-                          : Icons.download_rounded,
-                    ),
+                label: isDownloading
+                    ? 'Downloading'
+                    : isDownloaded
+                    ? 'Remove download'
+                    : track.playable
+                    ? 'Download for offline listening'
+                    : 'Download unavailable',
+              ),
             ),
-          IconButton(
-            tooltip: controller.isFavorite(track.id)
-                ? 'Remove from favorites'
-                : 'Add to favorites',
-            onPressed: () => controller.toggleFavorite(track.id),
-            icon: Icon(
-              controller.isFavorite(track.id)
-                  ? Icons.favorite
-                  : Icons.favorite_border,
+          PopupMenuItem<_TrackAction>(
+            value: _TrackAction.favorite,
+            child: _menuItem(
+              icon: Icon(
+                controller.isFavorite(track.id)
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+              ),
+              label: controller.isFavorite(track.id)
+                  ? 'Remove from favorites'
+                  : 'Add to favorites',
             ),
           ),
           if (showQueueAction)
-            IconButton(
-              tooltip: 'Add to queue',
-              onPressed: track.playable
-                  ? () => controller.enqueue(track)
-                  : null,
-              icon: const Icon(Icons.playlist_add),
+            PopupMenuItem<_TrackAction>(
+              value: _TrackAction.queue,
+              enabled: track.playable,
+              child: _menuItem(
+                icon: const Icon(Icons.playlist_add),
+                label: track.playable ? 'Add to queue' : 'Queue unavailable',
+              ),
             ),
         ],
       ),
     );
+  }
+
+  String _playbackTooltip({
+    required bool isCurrent,
+    required bool isPlaying,
+    required bool isLoading,
+  }) {
+    if (!track.playable) return '${track.format.toUpperCase()} is unavailable';
+    if (isLoading) return 'Loading ${track.title}';
+    if (isPlaying) return 'Pause ${track.title}';
+    if (isCurrent) return 'Resume ${track.title}';
+    return 'Play ${track.title}';
+  }
+
+  Widget _menuItem({required Widget icon, required String label}) {
+    return Row(
+      children: <Widget>[
+        SizedBox(width: 24, child: Center(child: icon)),
+        const SizedBox(width: 12),
+        Flexible(child: Text(label)),
+      ],
+    );
+  }
+
+  Future<void> _activateTrack() async {
+    if (!track.playable) return;
+    if (controller.playback.current?.id == track.id) {
+      await controller.playback.toggle();
+      return;
+    }
+    await controller.play(track);
+  }
+
+  Future<void> _handleAction(
+    BuildContext context,
+    _TrackAction action,
+    bool isDownloaded,
+  ) async {
+    switch (action) {
+      case _TrackAction.download:
+        await _toggleDownload(context, isDownloaded);
+        return;
+      case _TrackAction.favorite:
+        await controller.toggleFavorite(track.id);
+        return;
+      case _TrackAction.queue:
+        controller.enqueue(track);
+        return;
+    }
   }
 
   Future<void> _toggleDownload(BuildContext context, bool isDownloaded) async {
