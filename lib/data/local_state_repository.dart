@@ -17,6 +17,7 @@ class LocalStateRepository {
   ];
 
   final File _file;
+  Future<void> _pendingSave = Future<void>.value();
 
   Future<PersistedState> load() async {
     if (!await _file.exists()) return const PersistedState.defaults();
@@ -36,14 +37,20 @@ class LocalStateRepository {
     }
   }
 
-  Future<void> save(PersistedState state) async {
+  Future<void> save(PersistedState state) {
     final sanitized = PersistedState(
       library: _sanitizeLibrary(state.library),
       settings: _sanitizeSettings(state.settings),
     );
+    final save = _pendingSave.then((_) => _write(sanitized));
+    _pendingSave = save.catchError((_) {});
+    return save;
+  }
+
+  Future<void> _write(PersistedState state) async {
     await _file.parent.create(recursive: true);
     final temporary = File('${_file.path}.tmp');
-    await temporary.writeAsString(jsonEncode(_encode(sanitized)), flush: true);
+    await temporary.writeAsString(jsonEncode(_encode(state)), flush: true);
     if (await _file.exists()) await _file.delete();
     await temporary.rename(_file.path);
   }

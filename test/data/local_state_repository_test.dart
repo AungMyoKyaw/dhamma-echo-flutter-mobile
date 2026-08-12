@@ -54,4 +54,29 @@ void main() {
     );
     expect((await repository.load()).settings, const SettingsState.defaults());
   });
+
+  test(
+    'concurrent saves are serialized and preserve the latest state',
+    () async {
+      final saves = <Future<void>>[];
+      for (var index = 1; index <= 50; index += 1) {
+        saves.add(
+          repository.save(
+            PersistedState(
+              library: LibraryState(
+                favorites: <int>[index],
+                history: const <HistoryEntry>[],
+                resume: const <int, double>{},
+              ),
+              settings: const SettingsState.defaults(),
+            ),
+          ),
+        );
+      }
+
+      await Future.wait(saves);
+
+      expect((await repository.load()).library.favorites, <int>[50]);
+    },
+  );
 }
