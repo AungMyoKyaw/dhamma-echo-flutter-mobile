@@ -14,10 +14,14 @@ This is a native Flutter port of the current Dhamma Echo desktop product. The su
 - Curated teacher ordering with IDs `16, 42, 40, 53, 61, 8`.
 - Local favorites, 100-entry listening history, 500-entry resume map, rate, and volume settings.
 - Persistent mini-player plus a full Now Playing screen with queue, next track, seek, 15-second jumps, volume, and rates from `0.75×` through `2×`.
+- Tap anywhere on a playable talk row to start playback; download, favorite, and queue controls remain independent actions.
+- Source duration emitted during loading is preserved, keeping elapsed time, total time, and seek progress synchronized.
 - Background playback with lock-screen, notification, headset, and supported system media controls through `just_audio_background`.
 - App-private offline MP3 downloads with progress, local-first playback, removal, and a Downloads section in Library.
 - MP3 playback only from approved Dhamma Download hosts, with HTTP-to-HTTPS normalization and alternate-host retry.
 - WMA remains searchable but intentionally unavailable in the mobile player.
+- Forest-and-parchment Material 3 color system with WCAG AA-certified semantic color pairs and adaptive bottom-navigation labels at accessibility text sizes.
+- Serialized atomic local-state saves prevent overlapping playback updates from racing over the shared temporary file.
 - No accounts, analytics, telemetry, cloud sync, public-storage export, or bundled fonts.
 
 ## Technology
@@ -157,6 +161,8 @@ Store signing and publication remain external release steps.
 - No application secrets or user accounts exist.
 - Favorites, history, resume positions, and preferences remain on-device.
 
+Local state is written atomically through `state.json.tmp` and then promoted to `state.json`. Save requests are serialized in call order so rapid playback events cannot remove another request's temporary file or allow an older snapshot to overwrite newer state.
+
 See [SECURITY.md](SECURITY.md) and the [system context diagram](docs/architecture/context.md).
 
 ## Architecture
@@ -168,6 +174,9 @@ See [SECURITY.md](SECURITY.md) and the [system context diagram](docs/architectur
 - [Playback sequence](docs/architecture/playback-sequence.md)
 - [Async request concurrency](docs/architecture/concurrency.md)
 - [Background playback and offline downloads](docs/architecture/offline-playback.md)
+- [Forest-and-parchment color-system design](docs/superpowers/specs/2026-08-12-forest-parchment-color-system-design.md)
+- [Color-system implementation plan](docs/superpowers/plans/2026-08-12-forest-parchment-color-system.md)
+- [Color and reflow certification](docs/reports/2026-08-12-color-system-certification.md)
 - [Build/release flow](docs/architecture/release.md)
 - [Mobile design specification](docs/superpowers/specs/2026-08-10-dhamma-echo-flutter-mobile-design.md)
 - [Implementation plan](docs/superpowers/plans/2026-08-10-dhamma-echo-flutter-mobile.md)
@@ -183,6 +192,10 @@ See [SECURITY.md](SECURITY.md) and the [system context diagram](docs/architectur
 **A download fails** — only playable approved-host MP3 talks can be stored offline. Failed or incomplete responses are cleaned up and the app retries only the alternate approved Dhamma Download hostname.
 
 **Background controls are missing** — rerun `make bootstrap` so the generated Android/iOS projects receive the media-service and iOS background-audio declarations.
+
+**Now Playing shows `0:00` total duration** — stop the running app and launch a freshly built version. Current playback preserves duration metadata emitted while the source loads.
+
+**A `state.json.tmp` rename throws `PathNotFoundException`** — stop the running app and launch a freshly built version. Current persistence serializes overlapping state saves; the error indicates an older build is still running.
 
 **Android/iOS folders are absent** — run `make bootstrap` with Flutter 3.44.9 installed.
 
