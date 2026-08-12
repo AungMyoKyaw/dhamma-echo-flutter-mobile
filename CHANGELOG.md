@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed now-playing state so the mini player appears as soon as playback starts instead of waiting for the long-lived audio `play()` future to finish.
+- Added persistent Now Playing access on detail/settings routes and removed playback-position rebuilds that could make teacher/collection screens flicker.
+- Added background playback metadata and generated Android/iOS media-service configuration.
+- Added trusted app-private offline MP3 downloads, Library Downloads, local-first playback, progress, failure cleanup, and removal.
 - Replaced the five-talk development fixture with the verified 27,750,400-byte production SQLite catalogue (30,563 audio talks, 257 teachers, 429 audio collections).
 - Fixed teacher loading so the Teachers and Collections surfaces use the complete catalogue rather than a 100-row subset.
 - Reworked the light Material 3 theme for neutral surfaces, readable selected navigation states, flat search fields, and clearer metadata hierarchy.

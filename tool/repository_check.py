@@ -28,12 +28,14 @@ REQUIRED = (
     "tool/check_coverage.py",
     "tool/check_tests.py",
     "tool/configure_platforms.py",
+    "tool/test_configure_platforms.py",
     "tool/repository_check.py",
     "docs/requirements.md",
     "docs/architecture/context.md",
     "docs/architecture/modules.md",
     "docs/architecture/data-flow.md",
     "docs/architecture/playback-sequence.md",
+    "docs/architecture/offline-playback.md",
     "docs/architecture/release.md",
 )
 

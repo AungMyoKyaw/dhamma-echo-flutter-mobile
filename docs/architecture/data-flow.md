@@ -15,8 +15,14 @@ flowchart LR
     S --> J[(state.json)]
 
     UI --> P[PlaybackController]
+    AC --> O[(App-private offline MP3)]
+    O --> P
     P --> U[Approved media URL from SQLite]
     U --> N[dhammadownload.com HTTPS]
+
+    UI --> D[DownloadManager]
+    D --> U
+    D --> O
 ```
 
-The catalogue is immutable application data and is opened read-only. Search, teachers, collections, categories, formats, languages, titles, and media URLs all come from SQLite. Runtime network access is confined to approved audio playback. Personal state is separate from the catalogue and is sanitized before an atomic temporary-file rename.
+The catalogue is immutable application data and is opened read-only. Search, teachers, collections, categories, formats, languages, titles, and media URLs all come from SQLite. Runtime network access is confined to approved audio streaming/downloads. Personal state and offline media remain separate from the catalogue; state JSON and completed MP3 downloads both use temporary-file-first local persistence.

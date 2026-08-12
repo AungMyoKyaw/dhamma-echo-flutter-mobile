@@ -12,7 +12,8 @@ Report vulnerabilities privately through GitHub's private vulnerability reportin
 
 - The SQLite catalogue is read-only.
 - SQL values are parameterized.
-- Network audio is restricted to `dhammadownload.com` and `www.dhammadownload.com` over HTTPS after normalization.
+- Streaming and offline-download audio is restricted to `dhammadownload.com` and `www.dhammadownload.com` over HTTPS after normalization.
+- Offline downloads do not follow redirects, are streamed to app-private temporary files, and are atomically promoted only after a complete successful response.
 - URL credentials and custom ports are rejected.
 - Personal listening state stays on-device.
 - No API keys are required by the application.

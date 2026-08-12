@@ -31,4 +31,4 @@ make verify-catalogue
 make build-android
 ```
 
-Run the iOS build on macOS with Xcode.
+Run the iOS build on macOS with Xcode. Platform bootstrap changes must also pass `make platform-config-test`.

@@ -180,7 +180,7 @@ git clone dhamma-echo-flutter-mobile.bundle /tmp/dhamma-echo-bundle-clone
 - Modify: `test/ui/detail_settings_regression_test.dart`
 
 **Interfaces:**
-- `AppController.downloads` exposes `DownloadManager` for scoped UI listeners.
+- `AppController.downloadManager` exposes `DownloadManager` for scoped UI listeners.
 - `AppController.downloadedTracks` is catalogue-resolved local media.
 - `AppController.downloadTrack/removeDownload` coordinate manager + library list.
 - `AppController.play` supplies a downloaded local URI as `preferredUri`.

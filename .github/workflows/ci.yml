@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
 
 permissions:
@@ -36,6 +36,8 @@ jobs:
         run: make deps
       - name: Repository contract
         run: make repository-check
+      - name: Verify generated platform configuration
+        run: make platform-config-test
       - name: Format
         run: make format-check
       - name: Analyze

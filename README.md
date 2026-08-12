@@ -12,10 +12,12 @@ This is a native Flutter port of the current Dhamma Echo desktop product. The su
 - Explicit 50-talk and 24-collection pagination.
 - Curated teacher ordering with IDs `16, 42, 40, 53, 61, 8`.
 - Local favorites, 100-entry listening history, 500-entry resume map, rate, and volume settings.
-- Queue, next track, seek, 15-second jumps, volume, and rates from `0.75×` through `2×`.
+- Persistent mini-player plus a full Now Playing screen with queue, next track, seek, 15-second jumps, volume, and rates from `0.75×` through `2×`.
+- Background playback with lock-screen, notification, headset, and supported system media controls through `just_audio_background`.
+- App-private offline MP3 downloads with progress, local-first playback, removal, and a Downloads section in Library.
 - MP3 playback only from approved Dhamma Download hosts, with HTTP-to-HTTPS normalization and alternate-host retry.
 - WMA remains searchable but intentionally unavailable in the mobile player.
-- No accounts, analytics, telemetry, cloud sync, offline downloads, background playback service, or bundled fonts.
+- No accounts, analytics, telemetry, cloud sync, public-storage export, or bundled fonts.
 
 ## Technology
 
@@ -23,7 +25,9 @@ This is a native Flutter port of the current Dhamma Echo desktop product. The su
 - Material 3
 - `sqflite 2.4.3`
 - `just_audio 0.10.6`
+- `just_audio_background 0.0.1-beta.17`
 - `path 1.9.1`
+- `path_provider 2.1.6`
 - `flutter_lints 6.0.0`
 
 The production dependencies are intentionally small. No router package or external state-management framework is used; `Navigator`, `ChangeNotifier`, and platform capabilities are enough for this scope.
@@ -61,7 +65,7 @@ python3 -m pip install -r requirements-tooling.txt
 
 ## Catalogue
 
-The Git repository ships the verified production SQLite catalogue at `assets/catalogue/dhamma.db`. Browsing metadata is local application data; the network is only used when the player opens an approved audio URL stored in SQLite.
+The Git repository ships the verified production SQLite catalogue at `assets/catalogue/dhamma.db`. Browsing metadata is local application data; network access is limited to streaming or downloading approved audio URLs stored in SQLite.
 
 Verify the checked-in catalogue before building:
 
@@ -92,7 +96,9 @@ The bootstrap step then applies:
 
 - bundle/application ID `com.aungmyokyaw.dhammaecho`
 - display name `Dhamma Echo`
-- Android Internet permission
+- Android Internet, wake-lock, and foreground media-playback permissions
+- Android audio service, media-button receiver, and foreground playback service declaration
+- iOS `audio` background mode
 - Android and iOS app-icon variants generated from `assets/images/app-icon.png`
 
 ## Development
@@ -114,6 +120,7 @@ make check-tests
 make test
 make coverage
 make repository-check
+make platform-config-test
 make verify
 ```
 
@@ -141,8 +148,9 @@ Store signing and publication remain external release steps.
 
 - Catalogue queries are parameterized.
 - Catalogue database is opened read-only.
-- Audio URLs are allowlisted to `dhammadownload.com` / `www.dhammadownload.com`; custom ports and URL credentials are rejected.
-- Approved HTTP catalogue URLs are upgraded to HTTPS.
+- Stream and download URLs are allowlisted to `dhammadownload.com` / `www.dhammadownload.com`; custom ports and URL credentials are rejected.
+- Approved HTTP catalogue URLs are upgraded to HTTPS; download redirects are not followed.
+- Offline media is written to app-private storage through a temporary `.part` file and only promoted after a complete successful response.
 - No application secrets or user accounts exist.
 - Favorites, history, resume positions, and preferences remain on-device.
 
@@ -155,6 +163,7 @@ See [SECURITY.md](SECURITY.md) and the [system context diagram](docs/architectur
 - [Module architecture](docs/architecture/modules.md)
 - [Catalogue and local-state flow](docs/architecture/data-flow.md)
 - [Playback sequence](docs/architecture/playback-sequence.md)
+- [Background playback and offline downloads](docs/architecture/offline-playback.md)
 - [Build/release flow](docs/architecture/release.md)
 - [Mobile design specification](docs/superpowers/specs/2026-08-10-dhamma-echo-flutter-mobile-design.md)
 - [Implementation plan](docs/superpowers/plans/2026-08-10-dhamma-echo-flutter-mobile.md)
@@ -164,6 +173,10 @@ See [SECURITY.md](SECURITY.md) and the [system context diagram](docs/architectur
 **Catalogue verification fails** — restore the checked-in production `assets/catalogue/dhamma.db` or explicitly refresh it with `make catalogue`, then run `make verify-catalogue`.
 
 **Network MP3 does not play** — the player intentionally rejects any host outside the two approved Dhamma Download hostnames and rejects WMA.
+
+**A download fails** — only playable approved-host MP3 talks can be stored offline. Failed or incomplete responses are cleaned up and the app retries only the alternate approved Dhamma Download hostname.
+
+**Background controls are missing** — rerun `make bootstrap` so the generated Android/iOS projects receive the media-service and iOS background-audio declarations.
 
 **Android/iOS folders are absent** — run `make bootstrap` with Flutter 3.44.9 installed.
 
