@@ -31,6 +31,9 @@ class AppController extends ChangeNotifier {
   int _seenCompletionEpoch = 0;
   int? _seenTrackId;
   bool _wasPlaying = false;
+  int _audioSearchGeneration = 0;
+  int _collectionSearchGeneration = 0;
+  int _teacherSearchGeneration = 0;
 
   int selectedTab = 0;
   bool initializing = true;
@@ -184,13 +187,16 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> searchAudio({bool append = false}) async {
-    if (append && (audioLoadingMore || !hasMoreAudio)) return;
+    if (append && (audioLoading || audioLoadingMore || !hasMoreAudio)) return;
+    final generation = ++_audioSearchGeneration;
     if (append) {
       audioLoadingMore = true;
       audioLoadMoreError = '';
     } else {
       audioLoading = true;
+      audioLoadingMore = false;
       audioError = '';
+      audioLoadMoreError = '';
     }
     notifyListeners();
     final request = append
@@ -198,6 +204,7 @@ class AppController extends ChangeNotifier {
         : audioRequest.copyWith(offset: 0);
     try {
       final page = await _catalogue.searchAudio(request);
+      if (generation != _audioSearchGeneration) return;
       if (append) {
         final known = audioPage.items.map((track) => track.id).toSet();
         final appended = page.items.where((track) => !known.contains(track.id));
@@ -216,15 +223,18 @@ class AppController extends ChangeNotifier {
         );
       }
     } on Object catch (error) {
+      if (generation != _audioSearchGeneration) return;
       if (append) {
         audioLoadMoreError = _message(error);
       } else {
         audioError = _message(error);
       }
     } finally {
-      audioLoading = false;
-      audioLoadingMore = false;
-      notifyListeners();
+      if (generation == _audioSearchGeneration) {
+        audioLoading = false;
+        audioLoadingMore = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -244,13 +254,19 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> searchCollections({bool append = false}) async {
-    if (append && (collectionsLoadingMore || !hasMoreCollections)) return;
+    if (append &&
+        (collectionsLoading || collectionsLoadingMore || !hasMoreCollections)) {
+      return;
+    }
+    final generation = ++_collectionSearchGeneration;
     if (append) {
       collectionsLoadingMore = true;
       collectionsLoadMoreError = '';
     } else {
       collectionsLoading = true;
+      collectionsLoadingMore = false;
       collectionsError = '';
+      collectionsLoadMoreError = '';
     }
     notifyListeners();
     final request = append
@@ -258,6 +274,7 @@ class AppController extends ChangeNotifier {
         : collectionRequest.copyWith(offset: 0);
     try {
       final page = await _catalogue.searchCollections(request);
+      if (generation != _collectionSearchGeneration) return;
       if (append) {
         final known = collectionPage.items
             .map((collection) => collection.id)
@@ -280,24 +297,37 @@ class AppController extends ChangeNotifier {
         );
       }
     } on Object catch (error) {
+      if (generation != _collectionSearchGeneration) return;
       if (append) {
         collectionsLoadMoreError = _message(error);
       } else {
         collectionsError = _message(error);
       }
     } finally {
-      collectionsLoading = false;
-      collectionsLoadingMore = false;
-      notifyListeners();
+      if (generation == _collectionSearchGeneration) {
+        collectionsLoading = false;
+        collectionsLoadingMore = false;
+        notifyListeners();
+      }
     }
   }
 
   Future<void> searchTeachers(String query) async {
+    final generation = ++_teacherSearchGeneration;
     final normalized = normalizeText(query);
-    teacherResults = normalized.isEmpty
-        ? orderedTeachers
-        : await _catalogue.searchTeachers(normalized, limit: 100);
-    notifyListeners();
+    if (normalized.isEmpty) {
+      teacherResults = orderedTeachers;
+      notifyListeners();
+      return;
+    }
+    try {
+      final results = await _catalogue.searchTeachers(normalized, limit: 100);
+      if (generation != _teacherSearchGeneration) return;
+      teacherResults = results;
+      notifyListeners();
+    } on Object {
+      if (generation == _teacherSearchGeneration) rethrow;
+    }
   }
 
   Future<TeacherDetail> getTeacher(int id) => _catalogue.getTeacher(id);

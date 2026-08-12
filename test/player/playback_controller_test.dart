@@ -55,6 +55,26 @@ void main() {
     expect(playingBeforePortCompletes, isTrue);
   });
 
+  test('newest overlapping play request wins', () async {
+    final port = OverlappingLoadPlaybackPort();
+    final controller = PlaybackController(port);
+    addTearDown(controller.dispose);
+    final olderTrack = fixtureTrack(id: 1);
+    final newerTrack = fixtureTrack(id: 2);
+
+    final older = controller.play(olderTrack);
+    final newer = controller.play(newerTrack);
+    expect(port.loadedTracks.map((track) => track.id), <int>[1, 2]);
+
+    port.completeLoad(2);
+    expect(await newer, isTrue);
+    port.completeLoad(1);
+    expect(await older, isFalse);
+
+    expect(controller.current?.id, newerTrack.id);
+    expect(controller.playing, isTrue);
+  });
+
   test('play preserves duration emitted while the source loads', () async {
     final port = FakePlaybackPort(
       loadDuration: const Duration(minutes: 12, seconds: 34),
@@ -192,4 +212,42 @@ class FakePlaybackPort implements PlaybackPort {
   Future<void> setVolume(double value) async {
     volume = value;
   }
+}
+
+class OverlappingLoadPlaybackPort implements PlaybackPort {
+  final StreamController<PlaybackPortEvent> _events =
+      StreamController<PlaybackPortEvent>.broadcast(sync: true);
+  final List<AudioTrack> loadedTracks = <AudioTrack>[];
+  final Map<int, Completer<void>> _loads = <int, Completer<void>>{};
+
+  @override
+  Stream<PlaybackPortEvent> get events => _events.stream;
+
+  void completeLoad(int trackId) => _loads[trackId]?.complete();
+
+  @override
+  Future<void> dispose() => _events.close();
+
+  @override
+  Future<void> load(AudioTrack track, Uri uri) {
+    loadedTracks.add(track);
+    final completer = Completer<void>();
+    _loads[track.id] = completer;
+    return completer.future;
+  }
+
+  @override
+  Future<void> pause() async {}
+
+  @override
+  Future<void> play() async {}
+
+  @override
+  Future<void> seek(Duration position) async {}
+
+  @override
+  Future<void> setSpeed(double value) async {}
+
+  @override
+  Future<void> setVolume(double value) async {}
 }

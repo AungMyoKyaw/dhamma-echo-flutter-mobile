@@ -36,6 +36,173 @@ void main() {
     },
   );
 
+  test('newest audio search wins when an older request completes last', () async {
+    final catalogue = DeferredSearchCatalogue();
+    final controller = AppController(
+      catalogue: catalogue,
+      playback: PlaybackController(RecordingPlaybackPort()),
+    );
+    addTearDown(controller.dispose);
+
+    final older = controller.setAudioQuery('older');
+    final newer = controller.setAudioQuery('newer');
+
+    expect(catalogue.audioSearches, hasLength(2));
+    catalogue.audioSearches[1].complete(
+      const AudioSearchPage(
+        items: <AudioTrack>[trackTwo],
+        total: 1,
+        limit: 50,
+        offset: 0,
+      ),
+    );
+    await newer;
+    catalogue.audioSearches[0].complete(
+      const AudioSearchPage(
+        items: <AudioTrack>[trackOne],
+        total: 1,
+        limit: 50,
+        offset: 0,
+      ),
+    );
+    await older;
+
+    expect(controller.audioPage.items, <AudioTrack>[trackTwo]);
+    expect(controller.audioRequest.query, 'newer');
+    expect(controller.audioLoading, isFalse);
+  });
+
+  test('stale audio search errors are ignored', () async {
+    final catalogue = DeferredSearchCatalogue();
+    final controller = AppController(
+      catalogue: catalogue,
+      playback: PlaybackController(RecordingPlaybackPort()),
+    );
+    addTearDown(controller.dispose);
+
+    final older = controller.setAudioQuery('older');
+    final newer = controller.setAudioQuery('newer');
+    catalogue.audioSearches[1].complete(
+      const AudioSearchPage(
+        items: <AudioTrack>[trackTwo],
+        total: 1,
+        limit: 50,
+        offset: 0,
+      ),
+    );
+    await newer;
+    catalogue.audioSearches[0].completeError(StateError('stale failure'));
+    await older;
+
+    expect(controller.audioPage.items, <AudioTrack>[trackTwo]);
+    expect(controller.audioError, isEmpty);
+  });
+
+  test(
+    'newest collection search wins when an older request completes last',
+    () async {
+      final catalogue = DeferredSearchCatalogue();
+      final controller = AppController(
+        catalogue: catalogue,
+        playback: PlaybackController(RecordingPlaybackPort()),
+      );
+      addTearDown(controller.dispose);
+
+      final older = controller.setCollectionQuery('older');
+      final newer = controller.setCollectionQuery('newer');
+
+      expect(catalogue.collectionSearches, hasLength(2));
+      catalogue.collectionSearches[1].complete(
+        const CollectionSearchPage(
+          items: <CollectionSummary>[collectionTwo],
+          total: 1,
+          limit: 24,
+          offset: 0,
+        ),
+      );
+      await newer;
+      catalogue.collectionSearches[0].complete(
+        const CollectionSearchPage(
+          items: <CollectionSummary>[collectionOne],
+          total: 1,
+          limit: 24,
+          offset: 0,
+        ),
+      );
+      await older;
+
+      expect(controller.collectionPage.items, <CollectionSummary>[collectionTwo]);
+      expect(controller.collectionRequest.query, 'newer');
+      expect(controller.collectionsLoading, isFalse);
+    },
+  );
+
+  test('stale collection search errors are ignored', () async {
+    final catalogue = DeferredSearchCatalogue();
+    final controller = AppController(
+      catalogue: catalogue,
+      playback: PlaybackController(RecordingPlaybackPort()),
+    );
+    addTearDown(controller.dispose);
+
+    final older = controller.setCollectionQuery('older');
+    final newer = controller.setCollectionQuery('newer');
+    catalogue.collectionSearches[1].complete(
+      const CollectionSearchPage(
+        items: <CollectionSummary>[collectionTwo],
+        total: 1,
+        limit: 24,
+        offset: 0,
+      ),
+    );
+    await newer;
+    catalogue.collectionSearches[0].completeError(StateError('stale failure'));
+    await older;
+
+    expect(controller.collectionPage.items, <CollectionSummary>[collectionTwo]);
+    expect(controller.collectionsError, isEmpty);
+  });
+
+  test('newest teacher search wins when an older request completes last', () async {
+    final catalogue = DeferredSearchCatalogue();
+    final controller = AppController(
+      catalogue: catalogue,
+      playback: PlaybackController(RecordingPlaybackPort()),
+    );
+    addTearDown(controller.dispose);
+
+    final older = controller.searchTeachers('older');
+    final newer = controller.searchTeachers('newer');
+
+    expect(catalogue.teacherSearches, hasLength(2));
+    catalogue.teacherSearches[1].complete(
+      const <TeacherSummary>[teacherTwo],
+    );
+    await newer;
+    catalogue.teacherSearches[0].completeError(StateError('stale failure'));
+    await older;
+
+    expect(controller.teacherResults, <TeacherSummary>[teacherTwo]);
+  });
+
+  test('clearing teacher search invalidates an older request', () async {
+    final catalogue = DeferredSearchCatalogue();
+    final controller = AppController(
+      catalogue: catalogue,
+      playback: PlaybackController(RecordingPlaybackPort()),
+    );
+    addTearDown(controller.dispose);
+
+    final older = controller.searchTeachers('older');
+    await controller.searchTeachers('');
+    catalogue.teacherSearches.single.complete(
+      const <TeacherSummary>[teacherOne],
+    );
+    await older;
+
+    expect(controller.teacherResults, isEmpty);
+  });
+
   test('switching tracks stores the previous resume position', () async {
     final port = RecordingPlaybackPort();
     final controller = AppController(
@@ -254,6 +421,60 @@ const trackTwo = AudioTrack(
   teacherName: 'Teacher',
   playable: true,
 );
+
+const collectionOne = CollectionSummary(
+  id: 1,
+  name: 'Collection One',
+  teacherId: 16,
+  teacherName: 'Teacher One',
+  audioCount: 1,
+);
+
+const collectionTwo = CollectionSummary(
+  id: 2,
+  name: 'Collection Two',
+  teacherId: 17,
+  teacherName: 'Teacher Two',
+  audioCount: 1,
+);
+
+const teacherOne = TeacherSummary(id: 16, name: 'Teacher One', audioCount: 1);
+const teacherTwo = TeacherSummary(id: 17, name: 'Teacher Two', audioCount: 1);
+
+class DeferredSearchCatalogue extends RecordingCatalogue {
+  final List<Completer<AudioSearchPage>> audioSearches =
+      <Completer<AudioSearchPage>>[];
+  final List<Completer<CollectionSearchPage>> collectionSearches =
+      <Completer<CollectionSearchPage>>[];
+  final List<Completer<List<TeacherSummary>>> teacherSearches =
+      <Completer<List<TeacherSummary>>>[];
+
+  @override
+  Future<AudioSearchPage> searchAudio(AudioSearchRequest request) {
+    final completer = Completer<AudioSearchPage>();
+    audioSearches.add(completer);
+    return completer.future;
+  }
+
+  @override
+  Future<CollectionSearchPage> searchCollections(
+    CollectionSearchRequest request,
+  ) {
+    final completer = Completer<CollectionSearchPage>();
+    collectionSearches.add(completer);
+    return completer.future;
+  }
+
+  @override
+  Future<List<TeacherSummary>> searchTeachers(
+    String query, {
+    int limit = 100,
+  }) {
+    final completer = Completer<List<TeacherSummary>>();
+    teacherSearches.add(completer);
+    return completer.future;
+  }
+}
 
 class RecordingCatalogue implements CatalogueRepository {
   AudioSearchRequest? lastAudioRequest;

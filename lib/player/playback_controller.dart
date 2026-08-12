@@ -67,13 +67,17 @@ class PlaybackController extends ChangeNotifier {
       try {
         _duration = Duration.zero;
         await _port.load(track, candidate);
+        if (generation != _playGeneration) return false;
         await _port.setVolume(_volume);
+        if (generation != _playGeneration) return false;
         await _port.setSpeed(_rate);
+        if (generation != _playGeneration) return false;
         final resumePosition = resumeAt.isFinite && resumeAt > 0
             ? Duration(milliseconds: (resumeAt * 1000).round())
             : Duration.zero;
         if (resumePosition > Duration.zero) {
           await _port.seek(resumePosition);
+          if (generation != _playGeneration) return false;
         }
 
         _current = track;
@@ -87,6 +91,7 @@ class PlaybackController extends ChangeNotifier {
         // Local media may disappear and approved hosts may be temporarily
         // unavailable. Only the explicitly constructed candidates are tried.
       }
+      if (generation != _playGeneration) return false;
     }
 
     if (generation != _playGeneration) return false;
