@@ -46,6 +46,9 @@ platform-config-test:
 build-android: verify-catalogue
 	$(FLUTTER) build apk --release --split-per-abi
 
+build-aab: verify-catalogue
+	$(FLUTTER) build appbundle --release
+
 build-ios: verify-catalogue
 	$(FLUTTER) build ios --release --no-codesign
 
