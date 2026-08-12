@@ -56,6 +56,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         const SizedBox(height: 12),
         DropdownButtonFormField<int?>(
           initialValue: controller.collectionRequest.teacherId,
+          isExpanded: true,
           decoration: const InputDecoration(
             labelText: 'Teacher',
             prefixIcon: Icon(Icons.person_outline),
@@ -63,12 +64,15 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
           items: <DropdownMenuItem<int?>>[
             const DropdownMenuItem<int?>(
               value: null,
-              child: Text('All teachers'),
+              child: Text('All teachers', overflow: TextOverflow.ellipsis),
             ),
             ...controller.teachers.map(
               (teacher) => DropdownMenuItem<int?>(
                 value: teacher.id,
-                child: Text(teacher.name),
+                child: Text(
+                  teacher.name,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
           ],
