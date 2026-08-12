@@ -35,6 +35,7 @@ REQUIRED = (
     "docs/architecture/modules.md",
     "docs/architecture/data-flow.md",
     "docs/architecture/playback-sequence.md",
+    "docs/architecture/concurrency.md",
     "docs/architecture/offline-playback.md",
     "docs/architecture/release.md",
 )
