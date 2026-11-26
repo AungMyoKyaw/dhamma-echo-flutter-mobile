@@ -20,7 +20,7 @@ jobs:
     env:
       TEAM_ID: ZSQUH7GKC5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: subosito/flutter-action@v2
         with:
@@ -141,7 +141,7 @@ jobs:
             --apiIssuer "$ASC_ISSUER_ID"
 
       - name: Upload debug symbols artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ios-debug-symbols-${{ env.BUILD_NUM }}
           path: build/symbols/ios
@@ -159,4 +159,4 @@ jobs:
         if: always()
         run: |
           security delete-keychain "$KEYCHAIN_PATH" 2>/dev/null || true
-          rm -f "$ASC_KEY_PATH" "$RUNNER_TEMP/ExportOptions.plist"
+          rm -f "$ASC_KEY_PATH" "$RUNNER_TEMP/ExportOptions.plist" "$PROFILE_PATH"
