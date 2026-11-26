@@ -75,28 +75,30 @@ jobs:
           chmod 600 "$ASC_KEY_PATH"
           echo "ASC_KEY_PATH=$ASC_KEY_PATH" >> "$GITHUB_ENV"
 
-      - name: Build xcarchive
+      - name: Build and export App Store IPA
         run: |
           BUILD_NUM="${{ github.event.inputs.build_number }}"
           if [ -z "$BUILD_NUM" ]; then
             BUILD_NUM="${{ github.run_number }}"
           fi
           echo "BUILD_NUM=$BUILD_NUM" >> "$GITHUB_ENV"
-          flutter build ios --config-only --release --obfuscate --split-debug-info=build/symbols/ios --build-number="$BUILD_NUM"
-          xcodebuild \
-            -workspace ios/Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath build/ios/archive/Runner.xcarchive \
-            archive \
-            CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="Dhamma Echo AppStore"
 
-      - name: Export App Store IPA
-        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("ios/Runner.xcodeproj/project.pbxproj")
+          s = p.read_text()
+          anchor = '97C147071CF9000F007C117D /* Release */ = {\n\t\t\tisa = XCBuildConfiguration;\n\t\t\tbaseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;\n\t\t\tbuildSettings = {'
+          assert anchor in s, "Runner Release buildSettings not found"
+          inject = (
+              anchor
+              + '\n\t\t\t\tCODE_SIGN_IDENTITY = "Apple Distribution";'
+              + '\n\t\t\t\t"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";'
+              + '\n\t\t\t\tCODE_SIGN_STYLE = Manual;'
+              + '\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "Dhamma Echo AppStore";'
+          )
+          p.write_text(s.replace(anchor, inject, 1))
+          PY
+
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -121,10 +123,7 @@ jobs:
           </plist>
           EOF
 
-          xcodebuild -exportArchive \
-            -archivePath build/ios/archive/Runner.xcarchive \
-            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-            -exportPath build/ios/ipa
+          flutter build ipa --release --obfuscate --split-debug-info=build/symbols/ios --build-number="$BUILD_NUM" --export-options-plist="$RUNNER_TEMP/ExportOptions.plist"
 
       - name: Upload IPA to App Store Connect
         env:
