@@ -1,0 +1,179 @@
+{
+  "master": "design/dhamma-echo-mobile.figcraft",
+  "sha256": "cf4349cb942389b1d5d8ca9b1eb5724a4fcf64fef83fad24c2cf7805dff29010",
+  "pages": 20,
+  "nodes": 1957,
+  "missingFonts": [],
+  "featured_teachers": [
+    16,
+    42,
+    40,
+    53,
+    61,
+    8,
+    55,
+    1307
+  ],
+  "screens": [
+    {
+      "index": 0,
+      "page": "00 • Foundation · Palette & Type",
+      "file": "design/exports/screens/00-00-foundation-palette-type.png",
+      "w": 1120,
+      "h": 900,
+      "bytes": 248680
+    },
+    {
+      "index": 1,
+      "page": "01 • Foundation · Components & Lucide Icons",
+      "file": "design/exports/screens/01-01-foundation-components-lucide-icons.png",
+      "w": 1120,
+      "h": 900,
+      "bytes": 184661
+    },
+    {
+      "index": 2,
+      "page": "02 • Home · Light (EN)",
+      "file": "design/exports/screens/02-02-home-light-en.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 100191
+    },
+    {
+      "index": 3,
+      "page": "03 • Home · Dark (EN)",
+      "file": "design/exports/screens/03-03-home-dark-en.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 98814
+    },
+    {
+      "index": 4,
+      "page": "04 • Home · Myanmar UI (MM)",
+      "file": "design/exports/screens/04-04-home-myanmar-ui-mm.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 92241
+    },
+    {
+      "index": 5,
+      "page": "05 • Browse · Audio & Tri-Media",
+      "file": "design/exports/screens/05-05-browse-audio-tri-media.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 106580
+    },
+    {
+      "index": 6,
+      "page": "06 • Browse · eBooks Shelf",
+      "file": "design/exports/screens/06-06-browse-ebooks-shelf.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 83426
+    },
+    {
+      "index": 7,
+      "page": "07 • Browse · Teachers & Sources",
+      "file": "design/exports/screens/07-07-browse-teachers-sources.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 110014
+    },
+    {
+      "index": 8,
+      "page": "08 • Search · Results & Filters",
+      "file": "design/exports/screens/08-08-search-results-filters.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 92703
+    },
+    {
+      "index": 9,
+      "page": "09 • Detail · Teacher Profile",
+      "file": "design/exports/screens/09-09-detail-teacher-profile.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 76470
+    },
+    {
+      "index": 10,
+      "page": "10 • Detail · Collection & Bulk Download",
+      "file": "design/exports/screens/10-10-detail-collection-bulk-download.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 98636
+    },
+    {
+      "index": 11,
+      "page": "11 • Player · Audio Now Playing (Light)",
+      "file": "design/exports/screens/11-11-player-audio-now-playing-light.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 59496
+    },
+    {
+      "index": 12,
+      "page": "12 • Player · Audio Now Playing (Dark)",
+      "file": "design/exports/screens/12-12-player-audio-now-playing-dark.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 59678
+    },
+    {
+      "index": 13,
+      "page": "13 • Player · Queue & Sleep Timer",
+      "file": "design/exports/screens/13-13-player-queue-sleep-timer.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 87300
+    },
+    {
+      "index": 14,
+      "page": "14 • Player · Video Player",
+      "file": "design/exports/screens/14-14-player-video-player.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 72491
+    },
+    {
+      "index": 15,
+      "page": "15 • Reader · eBook PDF (Sepia)",
+      "file": "design/exports/screens/15-15-reader-ebook-pdf-sepia.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 83463
+    },
+    {
+      "index": 16,
+      "page": "16 • Library · Saved, History & Downloads",
+      "file": "design/exports/screens/16-16-library-saved-history-downloads.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 94408
+    },
+    {
+      "index": 17,
+      "page": "17 • Settings · Bilingual & Offline",
+      "file": "design/exports/screens/17-17-settings-bilingual-offline.png",
+      "w": 390,
+      "h": 844,
+      "bytes": 70886
+    },
+    {
+      "index": 18,
+      "page": "18 • States · Legacy, Offline & Long Myanmar",
+      "file": "design/exports/screens/18-18-states-legacy-offline-long-myanmar.png",
+      "w": 1240,
+      "h": 880,
+      "bytes": 221166
+    },
+    {
+      "index": 19,
+      "page": "19 • Store · App Store & Play Store Showcase",
+      "file": "design/exports/screens/19-19-store-app-store-play-store-showcase.png",
+      "w": 1920,
+      "h": 1080,
+      "bytes": 252633
+    }
+  ]
+}

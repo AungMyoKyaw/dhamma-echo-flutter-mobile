@@ -1,0 +1,154 @@
+{
+  "pages": [
+    {
+      "name": "00 • Foundation · Palette & Type",
+      "width": 1120,
+      "height": 900,
+      "frame_id": 2,
+      "dark": false
+    },
+    {
+      "name": "01 • Foundation · Components & Lucide Icons",
+      "width": 1120,
+      "height": 900,
+      "frame_id": 129,
+      "dark": false
+    },
+    {
+      "name": "02 • Home · Light (EN)",
+      "width": 390,
+      "height": 844,
+      "frame_id": 348,
+      "dark": false
+    },
+    {
+      "name": "03 • Home · Dark (EN)",
+      "width": 390,
+      "height": 844,
+      "frame_id": 462,
+      "dark": true
+    },
+    {
+      "name": "04 • Home · Myanmar UI (MM)",
+      "width": 390,
+      "height": 844,
+      "frame_id": 576,
+      "dark": false
+    },
+    {
+      "name": "05 • Browse · Audio & Tri-Media",
+      "width": 390,
+      "height": 844,
+      "frame_id": 685,
+      "dark": false
+    },
+    {
+      "name": "06 • Browse · eBooks Shelf",
+      "width": 390,
+      "height": 844,
+      "frame_id": 807,
+      "dark": false
+    },
+    {
+      "name": "07 • Browse · Teachers & Sources",
+      "width": 390,
+      "height": 844,
+      "frame_id": 896,
+      "dark": false
+    },
+    {
+      "name": "08 • Search · Results & Filters",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1010,
+      "dark": false
+    },
+    {
+      "name": "09 • Detail · Teacher Profile",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1121,
+      "dark": false
+    },
+    {
+      "name": "10 • Detail · Collection & Bulk Download",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1211,
+      "dark": false
+    },
+    {
+      "name": "11 • Player · Audio Now Playing (Light)",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1312,
+      "dark": false
+    },
+    {
+      "name": "12 • Player · Audio Now Playing (Dark)",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1380,
+      "dark": true
+    },
+    {
+      "name": "13 • Player · Queue & Sleep Timer",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1448,
+      "dark": false
+    },
+    {
+      "name": "14 • Player · Video Player",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1519,
+      "dark": false
+    },
+    {
+      "name": "15 • Reader · eBook PDF (Sepia)",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1589,
+      "dark": false
+    },
+    {
+      "name": "16 • Library · Saved, History & Downloads",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1621,
+      "dark": false
+    },
+    {
+      "name": "17 • Settings · Bilingual & Offline",
+      "width": 390,
+      "height": 844,
+      "frame_id": 1718,
+      "dark": false
+    },
+    {
+      "name": "18 • States · Legacy, Offline & Long Myanmar",
+      "width": 1240,
+      "height": 880,
+      "frame_id": 1763,
+      "dark": false
+    },
+    {
+      "name": "19 • Store · App Store & Play Store Showcase",
+      "width": 1920,
+      "height": 1080,
+      "frame_id": 1868,
+      "dark": false
+    }
+  ],
+  "featured_teachers": [
+    16,
+    42,
+    40,
+    53,
+    61,
+    8,
+    55,
+    1307
+  ]
+}

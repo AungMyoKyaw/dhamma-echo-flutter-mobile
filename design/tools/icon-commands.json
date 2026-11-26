@@ -1,0 +1,432 @@
+[
+  {
+    "command": "artboard.setProps",
+    "params": {
+      "index": 0,
+      "name": "iOS App Icon",
+      "x": 0,
+      "y": 0,
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "x": 0,
+      "y": 0,
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "gradient": {
+        "kind": "radial",
+        "stops": [
+          {
+            "offset": 0.0,
+            "color": "#C95D3C"
+          },
+          {
+            "offset": 0.55,
+            "color": "#B24A2B"
+          },
+          {
+            "offset": 1.0,
+            "color": "#943A1F"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 202.0,
+      "y": 202.0,
+      "width": 620.0,
+      "height": 620.0
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#E8C98A"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 22.0,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 300.0,
+      "y": 300.0,
+      "width": 424.0,
+      "height": 424.0
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#FAF8F3"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 30.0,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 390.0,
+      "y": 390.0,
+      "width": 244.0,
+      "height": 244.0
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#FAF8F3"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 34.0,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 468.0,
+      "y": 468.0,
+      "width": 88.0,
+      "height": 88.0
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "color": "#FAF8F3"
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "artboard.new",
+    "params": {
+      "x": 1200,
+      "y": 0,
+      "width": 1024,
+      "height": 1024,
+      "name": "Android Adaptive Foreground"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 1488.8,
+      "y": 288.8,
+      "width": 446.4,
+      "height": 446.4
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#E8C98A"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 15.84,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 1559.3600000000001,
+      "y": 359.36,
+      "width": 305.28,
+      "height": 305.28
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#FAF8F3"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 21.599999999999998,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 1624.16,
+      "y": 424.15999999999997,
+      "width": 175.68,
+      "height": 175.68
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#FAF8F3"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 24.48,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 1680.32,
+      "y": 480.32,
+      "width": 63.36,
+      "height": 63.36
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "color": "#FAF8F3"
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "artboard.new",
+    "params": {
+      "x": 2400,
+      "y": 0,
+      "width": 1024,
+      "height": 1024,
+      "name": "Android Adaptive Background"
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "x": 2400,
+      "y": 0,
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "gradient": {
+        "kind": "radial",
+        "stops": [
+          {
+            "offset": 0.0,
+            "color": "#C95D3C"
+          },
+          {
+            "offset": 0.55,
+            "color": "#B24A2B"
+          },
+          {
+            "offset": 1.0,
+            "color": "#943A1F"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "artboard.new",
+    "params": {
+      "x": 3600,
+      "y": 0,
+      "width": 1024,
+      "height": 1024,
+      "name": "Android Monochrome"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 3888.8,
+      "y": 288.8,
+      "width": 446.4,
+      "height": 446.4
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#1A1918"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 15.84,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 3959.36,
+      "y": 359.36,
+      "width": 305.28,
+      "height": 305.28
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#1A1918"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 21.599999999999998,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 4024.16,
+      "y": 424.15999999999997,
+      "width": 175.68,
+      "height": 175.68
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "none": true
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "color": "#1A1918"
+    }
+  },
+  {
+    "command": "stroke.set",
+    "params": {
+      "weight": 24.48,
+      "cap": "round"
+    }
+  },
+  {
+    "command": "shape.ellipse",
+    "params": {
+      "x": 4080.32,
+      "y": 480.32,
+      "width": 63.36,
+      "height": 63.36
+    }
+  },
+  {
+    "command": "paint.setFill",
+    "params": {
+      "color": "#1A1918"
+    }
+  },
+  {
+    "command": "paint.setStroke",
+    "params": {
+      "none": true
+    }
+  }
+]
