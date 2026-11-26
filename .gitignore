@@ -49,6 +49,9 @@ app.*.map.json
 
 # Local signing certificates, keys, and profiles (never commit)
 ios/signing/
+android/key.properties
+*.jks
+*.keystore
 *.p12
 *.p8
 *.mobileprovision
