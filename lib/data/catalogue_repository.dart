@@ -121,11 +121,9 @@ class CatalogueRepository {
     LEFT JOIN teachers t ON t.id = c.teacher_id
   ''';
 
-  Future<List<CollectionSummary>> getFeaturedCollections({
-    int limit = 4,
-  }) async {
+  Future<List<CollectionSummary>> getRandomCollections({int limit = 4}) async {
     final rows = await _db.rawQuery(
-      '$_collectionSelect ORDER BY item_count DESC, c.id LIMIT ?',
+      '$_collectionSelect WHERE (SELECT COUNT(*) FROM media_collections mc WHERE mc.collection_id = c.id) > 0 ORDER BY RANDOM() LIMIT ?',
       [limit],
     );
     return rows.map(_collection).toList();

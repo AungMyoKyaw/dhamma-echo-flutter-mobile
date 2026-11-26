@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     final repo = context.read<AppController>().catalogue;
     _teachers = repo.getFeaturedTeachers();
-    _collections = repo.getFeaturedCollections(limit: 4);
+    _collections = repo.getRandomCollections(limit: 4);
   }
 
   @override
@@ -179,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
-        SectionLabel(s.featuredCollections),
+        SectionLabel(s.randomCollections),
         FutureBuilder<List<CollectionSummary>>(
           future: _collections,
           builder: (context, snap) {

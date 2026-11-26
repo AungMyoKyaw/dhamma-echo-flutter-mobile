@@ -2,7 +2,15 @@
 
 A calm, local-first Android and iOS library for discovering, listening to, watching, and reading **47,960** authentic Dhamma teachings (MP3 audio, MP4 video, PDF eBooks, plus browser fallback for legacy WMA/WMV/DOC) across **256** teachers and **1,315** collections—with zero accounts, zero ads, and zero tracking.
 
-![Dhamma Echo on iOS](docs/screenshots/ios-home.png)
+## Screenshots (iOS · 1206×2622)
+
+| Home | Browse | eBooks | Teachers |
+|---|---|---|---|
+| ![Home](docs/screenshots/ios-home.png) | ![Browse](docs/screenshots/ios-browse.png) | ![eBooks](docs/screenshots/ios-ebooks.png) | ![Teachers](docs/screenshots/ios-teachers.png) |
+
+| Search | Library | Settings |
+|---|---|---|
+| ![Search](docs/screenshots/ios-search.png) | ![Library](docs/screenshots/ios-library.png) | ![Settings](docs/screenshots/ios-settings.png) |
 
 ## Highlights
 

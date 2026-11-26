@@ -59,8 +59,8 @@ class AppStrings {
   String get featuredTeachers =>
       _t('FEATURED TEACHERS', 'အထူးတင်ဆက် ဆရာတော်များ');
   String get viewAll => _t('View all', 'အားလုံးကြည့်မည်');
-  String get featuredCollections =>
-      _t('FEATURED COLLECTIONS', 'အထူးစုစည်းမှုများ');
+  String get randomCollections =>
+      _t('RANDOM COLLECTIONS', 'ကျပန်းစုစည်းမှုများ');
   String itemsCount(int c) => _t('${n(c)} items', '${n(c)} ခု');
 
   // Browse

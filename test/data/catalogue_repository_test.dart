@@ -58,15 +58,15 @@ void main() {
     expect(results, isNotEmpty);
   });
 
-  test('loads collection tracks ordered', () async {
-    final collections = await repo!.getFeaturedCollections(limit: 2);
-    expect(collections.length, 2);
-    expect(collections.first.itemCount, 752);
+  test('loads random collections and tracks ordered', () async {
+    final collections = await repo!.getRandomCollections(limit: 4);
+    expect(collections.length, 4);
+    expect(collections.every((c) => c.itemCount > 0), isTrue);
 
     final tracks = await repo!.getCollectionTracks(
       collections.first.id,
       limit: 10,
     );
-    expect(tracks.length, 10);
+    expect(tracks, isNotEmpty);
   });
 }
