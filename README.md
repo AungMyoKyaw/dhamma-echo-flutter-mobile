@@ -39,3 +39,9 @@ make build-android
 ```
 
 Run `make help` to see all targets.
+
+## License
+
+Dhamma Echo is licensed under the [GNU Affero General Public License
+v3.0](https://www.gnu.org/licenses/agpl-3.0.html). See the [LICENSE](LICENSE)
+file for the complete license text.
