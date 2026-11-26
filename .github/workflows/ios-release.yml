@@ -52,6 +52,18 @@ jobs:
           security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain-db
           rm -f "$RUNNER_TEMP/dist.p12"
 
+      - name: Install provisioning profile
+        env:
+          PROFILE_BASE64: ${{ secrets.APPLE_PROVISION_PROFILE_BASE64 }}
+        run: |
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILE_DIR"
+          PROFILE_TMP="$RUNNER_TEMP/dhamma_echo.mobileprovision"
+          echo "$PROFILE_BASE64" | base64 --decode > "$PROFILE_TMP"
+          UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$(security cms -D -i "$PROFILE_TMP")")
+          mv "$PROFILE_TMP" "$PROFILE_DIR/${UUID}.mobileprovision"
+          echo "PROFILE_PATH=$PROFILE_DIR/${UUID}.mobileprovision" >> "$GITHUB_ENV"
+
       - name: Configure App Store Connect API key
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
@@ -70,12 +82,20 @@ jobs:
             BUILD_NUM="${{ github.run_number }}"
           fi
           echo "BUILD_NUM=$BUILD_NUM" >> "$GITHUB_ENV"
-          flutter build xcarchive --release --obfuscate --split-debug-info=build/symbols/ios --build-number="$BUILD_NUM"
+          flutter build ios --config-only --release --obfuscate --split-debug-info=build/symbols/ios --build-number="$BUILD_NUM"
+          xcodebuild \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ios/archive/Runner.xcarchive \
+            archive \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="Dhamma Echo AppStore"
 
       - name: Export App Store IPA
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -87,7 +107,14 @@ jobs:
             <key>teamID</key>
             <string>${TEAM_ID}</string>
             <key>signingStyle</key>
-            <string>automatic</string>
+            <string>manual</string>
+            <key>signingCertificate</key>
+            <string>Apple Distribution</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.aungmyokyaw.dhammaecho</key>
+              <string>Dhamma Echo AppStore</string>
+            </dict>
             <key>uploadSymbols</key>
             <true/>
           </dict>
@@ -97,11 +124,7 @@ jobs:
           xcodebuild -exportArchive \
             -archivePath build/ios/archive/Runner.xcarchive \
             -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-            -exportPath build/ios/ipa \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+            -exportPath build/ios/ipa
 
       - name: Upload IPA to App Store Connect
         env:
