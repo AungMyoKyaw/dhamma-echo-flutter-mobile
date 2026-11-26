@@ -76,11 +76,6 @@ flutter:
     - assets/catalogue/dhamma.db
     - assets/icons/lucide/
   fonts:
-    - family: PTSerif
-      fonts:
-        - asset: assets/fonts/PTSerif-Regular.ttf
-        - asset: assets/fonts/PTSerif-Bold.ttf
-          weight: 700
     - family: NotoSerifMyanmar
       fonts:
         - asset: assets/fonts/NotoSerifMyanmar-Regular.ttf

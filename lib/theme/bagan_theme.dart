@@ -26,10 +26,10 @@ abstract final class BaganType {
     final mm = hasMyanmar(text);
     final family = mm
         ? (serif ? 'NotoSerifMyanmar' : 'NotoSansMyanmar')
-        : (serif ? 'PTSerif' : 'Avenir Next');
+        : (serif ? 'PT Serif' : 'Avenir Next');
     final fallback = mm
-        ? (serif ? const ['PTSerif'] : const ['Avenir Next'])
-        : (serif ? const ['NotoSerifMyanmar'] : _latinSansFallback);
+        ? (serif ? const ['PT Serif', 'Georgia'] : const ['Avenir Next'])
+        : (serif ? const ['NotoSerifMyanmar', 'Georgia'] : _latinSansFallback);
     // The bundled Myanmar fonts only ship Regular + Bold (serif) or
     // Regular/Medium/Bold (sans); clamp to the available weights.
     final resolved = (serif && mm)
