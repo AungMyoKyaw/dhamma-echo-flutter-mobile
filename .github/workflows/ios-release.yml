@@ -6,19 +6,33 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
+      marketing_version:
+        description: 'Optional CFBundleShortVersionString override (defaults to tag or pubspec.yaml)'
+        required: false
+        default: ''
       build_number:
         description: 'Optional CFBundleVersion build number (defaults to github.run_number)'
         required: false
         default: ''
+      attach_build:
+        description: 'Wait for build processing and attach it to the inflight App Store Connect version'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-and-upload:
     runs-on: macos-26
     env:
       TEAM_ID: ZSQUH7GKC5
+      ASC_APP_ID: '6839647786'
     steps:
       - uses: actions/checkout@v7
 
@@ -34,6 +48,16 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Cache CocoaPods
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cocoapods
+            ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock', 'pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - name: Install dependencies and verify
         run: |
           flutter pub get
@@ -43,8 +67,8 @@ jobs:
 
       - name: Import Apple Distribution certificate
         env:
-          P12_BASE64: ${{ secrets.APPLE_DIST_CERT_P12_BASE64 }}
-          P12_PASSWORD: ${{ secrets.APPLE_DIST_CERT_PASSWORD }}
+          P12_BASE64: ${{ secrets.APPLE_DIST_CERT_P12_BASE64 || secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.APPLE_DIST_CERT_PASSWORD || secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
         run: |
           KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
           KEYCHAIN_PASS=$(openssl rand -hex 16)
@@ -73,8 +97,8 @@ jobs:
 
       - name: Configure App Store Connect API key
         env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID || secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 || secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
         run: |
           mkdir -p "$HOME/.appstoreconnect/private_keys"
           ASC_KEY_PATH="$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
@@ -83,12 +107,24 @@ jobs:
           echo "ASC_KEY_PATH=$ASC_KEY_PATH" >> "$GITHUB_ENV"
 
       - name: Build and export App Store IPA
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.marketing_version }}
+          INPUT_BUILD: ${{ github.event.inputs.build_number }}
         run: |
-          BUILD_NUM="${{ github.event.inputs.build_number }}"
+          BUILD_NUM="$INPUT_BUILD"
           if [ -z "$BUILD_NUM" ]; then
             BUILD_NUM="${{ github.run_number }}"
           fi
           echo "BUILD_NUM=$BUILD_NUM" >> "$GITHUB_ENV"
+
+          BUILD_NAME_ARG=""
+          if [ -n "$INPUT_VERSION" ]; then
+            BUILD_NAME_ARG="--build-name=$INPUT_VERSION"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG_VERSION="${GITHUB_REF_NAME#v}"
+            TAG_VERSION="${TAG_VERSION%%+*}"
+            BUILD_NAME_ARG="--build-name=$TAG_VERSION"
+          fi
 
           python3 - <<'PY'
           from pathlib import Path
@@ -130,21 +166,106 @@ jobs:
           </plist>
           EOF
 
-          flutter build ipa --release --obfuscate --split-debug-info=build/symbols/ios --build-number="$BUILD_NUM" --export-options-plist="$RUNNER_TEMP/ExportOptions.plist"
+          flutter build ipa --release \
+            --obfuscate \
+            --split-debug-info=build/symbols/ios \
+            --build-number="$BUILD_NUM" \
+            $BUILD_NAME_ARG \
+            --export-options-plist="$RUNNER_TEMP/ExportOptions.plist"
 
-      - name: Upload IPA to App Store Connect
+      - name: Validate and upload IPA to App Store Connect
         env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID || secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID || secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
         run: |
           IPA_FILE=$(find build/ios/ipa -name '*.ipa' | head -n 1)
           if [ -z "$IPA_FILE" ]; then
             echo "No IPA found in build/ios/ipa"
             exit 1
           fi
+          echo "Validating $IPA_FILE with App Store Connect..."
+          xcrun altool --validate-app --type ios --file "$IPA_FILE" \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID"
+
+          echo "Uploading $IPA_FILE to App Store Connect..."
           xcrun altool --upload-app --type ios --file "$IPA_FILE" \
             --apiKey "$ASC_KEY_ID" \
             --apiIssuer "$ASC_ISSUER_ID"
+
+      - name: Attach processed build to inflight App Store version
+        if: ${{ github.event.inputs.attach_build == 'true' }}
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID || secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID || secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, subprocess, sys, tempfile, time, urllib.parse, urllib.request
+          from pathlib import Path
+
+          API = "https://api.appstoreconnect.apple.com/v1"
+          app_id = os.environ["ASC_APP_ID"]
+          build_num = os.environ["BUILD_NUM"]
+          key_id = os.environ["ASC_KEY_ID"]
+          issuer_id = os.environ["ASC_ISSUER_ID"]
+          key_path = Path(os.environ["ASC_KEY_PATH"])
+
+          def b64u(b): return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+          def der_to_raw(der, size=32):
+              i = 1
+              l = der[i]; i += 1
+              if l & 0x80: i += l & 0x7F
+              i += 1; rl = der[i]; i += 1; r = der[i:i+rl]; i += rl
+              i += 1; sl = der[i]; i += 1; s = der[i:i+sl]
+              return r.lstrip(b"\x00").rjust(size, b"\x00") + s.lstrip(b"\x00").rjust(size, b"\x00")
+
+          now = int(time.time())
+          hdr = b64u(json.dumps({"alg": "ES256", "kid": key_id, "typ": "JWT"}, separators=(",", ":")).encode())
+          pay = b64u(json.dumps({"iss": issuer_id, "iat": now - 10, "exp": now + 1100, "aud": "appstoreconnect-v1"}, separators=(",", ":")).encode())
+          inp = f"{hdr}.{pay}".encode()
+          with tempfile.NamedTemporaryFile(delete=False) as tf:
+              tf.write(inp); p = tf.name
+          try:
+              der = subprocess.check_output(["openssl", "dgst", "-sha256", "-sign", str(key_path), p])
+          finally:
+              os.unlink(p)
+          tok = f"{hdr}.{pay}.{b64u(der_to_raw(der))}"
+
+          def api(method, path, body=None):
+              data = json.dumps(body).encode() if body is not None else None
+              req = urllib.request.Request(f"{API}{path}", data=data, method=method, headers={
+                  "Authorization": f"Bearer {tok}",
+                  "Accept": "application/json",
+                  **({"Content-Type": "application/json"} if data else {}),
+              })
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  raw = r.read()
+                  return json.loads(raw.decode()) if raw else {}
+
+          deadline = time.time() + 900
+          build_id = None
+          while time.time() < deadline:
+              q = urllib.parse.urlencode({"filter[app]": app_id, "filter[version]": build_num, "sort": "-uploadedDate", "limit": "1"})
+              items = api("GET", f"/builds?{q}").get("data", [])
+              if items:
+                  st = items[0]["attributes"].get("processingState")
+                  print(f"Build {build_num} state: {st}")
+                  if st == "VALID":
+                      build_id = items[0]["id"]; break
+                  if st in ("FAILED", "INVALID"):
+                      sys.exit(f"Build {build_num} failed processing: {st}")
+              time.sleep(20)
+          if not build_id:
+              sys.exit(f"Timed out waiting for VALID build {build_num}")
+
+          q = urllib.parse.urlencode({"filter[platform]": "IOS", "filter[appStoreState]": "PREPARE_FOR_SUBMISSION,DEVELOPER_REJECTED,REJECTED", "limit": "1"})
+          vers = api("GET", f"/apps/{app_id}/appStoreVersions?{q}").get("data", [])
+          if not vers:
+              print("No editable PREPARE_FOR_SUBMISSION version found; skipping auto-attach.")
+              sys.exit(0)
+          api("PATCH", f"/appStoreVersions/{vers[0]['id']}/relationships/build", {"data": {"type": "builds", "id": build_id}})
+          print(f"Attached build {build_num} ({build_id}) to version {vers[0]['attributes']['versionString']}.")
+          PY
 
       - name: Upload debug symbols artifact
         uses: actions/upload-artifact@v7
